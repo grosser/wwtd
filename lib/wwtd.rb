@@ -5,11 +5,15 @@ require "yaml"
 module WWTD
   CONFIG = ".travis.yml"
   COMBINATORS = ["rvm", "gemfile"]
+  UNDERSTOOD = ["rvm", "gemfile", "matrix", "script", "bundler_args"]
 
   class << self
     def run(argv)
       parse_options(argv)
       config = (File.exist?(CONFIG) ? YAML.load_file(CONFIG) : {})
+      ignored = config.keys - UNDERSTOOD
+      puts "Ignoring: #{ignored.join(", ")}" unless ignored.empty?
+
       success = matrix(config).map do |config|
         puts "config #{config.to_a.sort.map { |k,v| "#{k}: v" }.join(", ")}" unless config.empty?
         run_config(config)

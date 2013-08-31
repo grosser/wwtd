@@ -86,6 +86,12 @@ describe WWTD do
       result.should include "\nRAKE: 0.9.2.2 -- Gemfile2\n"
     end
 
+    it "prints ignored items" do
+      write_default_rakefile
+      write ".travis.yml", "foo: bar\nbar: baz"
+      wwtd("").should include "Ignoring: foo, bar"
+    end
+
     describe "with multiple" do
       before do
         write ".travis.yml", <<-YML.gsub("          ", "")
