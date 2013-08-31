@@ -19,10 +19,6 @@ Ruby 1.9.3 with gemfiles/rails23.gemfile
 ....
 ```
 
-TODO
-====
- - support env and multiple envs
-
 Author
 ======
 [Michael Grosser](http://grosser.it)<br/>

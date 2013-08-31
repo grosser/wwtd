@@ -1,10 +1,11 @@
 require "wwtd/version"
 require "optparse"
 require "yaml"
+require "shellwords"
 
 module WWTD
   CONFIG = ".travis.yml"
-  COMBINATORS = ["rvm", "gemfile"]
+  COMBINATORS = ["rvm", "gemfile", "env"]
   UNDERSTOOD = ["rvm", "gemfile", "matrix", "script", "bundler_args"]
 
   class << self
@@ -47,6 +48,11 @@ module WWTD
     def run_config(config)
       gemfile = config["gemfile"] || "Gemfile"
       ENV["BUNDLE_GEMFILE"] = gemfile
+
+      Shellwords.split(config["env"] || "").each do |part|
+        name, value = part.split("=", 2)
+        ENV[name] = value
+      end
 
       default_command = (File.exist?(gemfile) ? "bundle exec rake" : "rake")
       command = config["script"] || default_command

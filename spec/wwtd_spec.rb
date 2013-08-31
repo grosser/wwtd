@@ -92,6 +92,12 @@ describe WWTD do
       wwtd("").should include "Ignoring: foo, bar"
     end
 
+    it "can execute with env" do
+      write ".travis.yml", "env: FOO='bar baz' BAR=12=3"
+      write "Rakefile", "task(:default){ puts %Q{ENV:\#{ENV['FOO']}--\#{ENV['BAR']}} }"
+      wwtd("").should include "ENV:bar baz--12=3"
+    end
+
     describe "with multiple" do
       before do
         write ".travis.yml", <<-YML.gsub("          ", "")
@@ -170,6 +176,10 @@ describe WWTD do
 
     it "builds from array" do
       call({"gemfile" => ["Gemfile1", "Gemfile2"]}).should == [{"gemfile" => "Gemfile1"}, {"gemfile" => "Gemfile2"}]
+    end
+
+    it "builds from env" do
+      call({"env" => ["A=1", "B=2"]}).should == [{"env" => "A=1"}, {"env" => "B=2"}]
     end
 
     it "builds from multiple arrays" do
