@@ -4,12 +4,40 @@ require "yaml"
 
 module WWTD
   CONFIG = ".travis.yml"
+  COMBINATORS = ["rvm", "gemfile"]
 
   class << self
     def run(argv)
       parse_options(argv)
       config = (File.exist?(CONFIG) ? YAML.load_file(CONFIG) : {})
+      success = matrix(config).map do |config|
+        puts "config #{config.to_a.sort.map { |k,v| "#{k}: v" }.join(", ")}" unless config.empty?
+        run_config(config)
+      end
+      success.all? ? 0 : 1
+    end
 
+    private
+
+    def matrix(config)
+      components = COMBINATORS.map do |multiplier|
+        next unless values = config[multiplier]
+        Array(values).map { |v| {multiplier => v} }
+      end.compact
+
+      components = components.inject([{}]) { |all, v| all.product(v).map! { |values| merge_hashes(values) } }
+      components.map! { |c| config.merge(c) }
+    end
+
+    def clone(object)
+      Marshal.load(Marshal.dump(object))
+    end
+
+    def merge_hashes(array)
+      array.inject({}) { |all, v| all.merge!(v); all }
+    end
+
+    def run_config(config)
       gemfile = config["gemfile"] || "Gemfile"
       ENV["BUNDLE_GEMFILE"] = gemfile
 
@@ -22,10 +50,8 @@ module WWTD
         default_bundler_args = (File.exist?("#{gemfile}.lock") ? "--deployment" : "")
         sh "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args}".strip
       end
-      exec(command)
+      sh(command)
     end
-
-    private
 
     # http://grosser.it/2010/12/11/sh-without-rake/
     def sh(cmd)

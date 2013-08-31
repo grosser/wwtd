@@ -19,6 +19,10 @@ Ruby 1.9.3 with gemfiles/rails23.gemfile
 ....
 ```
 
+TODO
+====
+ - support env and multiple envs
+ - support exclude
 
 Author
 ======

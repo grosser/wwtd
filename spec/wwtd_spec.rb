@@ -11,8 +11,8 @@ describe WWTD do
   end
 
   describe "CLI" do
-    def write_default_gemfile
-      write "Gemfile", "source 'https://rubygems.org'\ngem 'rake', '0.9.2.2'"
+    def write_default_gemfile(rake_version="0.9.2.2")
+      write "Gemfile", "source 'https://rubygems.org'\ngem 'rake', '#{rake_version}'"
     end
 
     def write_default_rakefile
@@ -35,13 +35,13 @@ describe WWTD do
 
     it "runs without .travis.yml" do
       write_default_rakefile
-      wwtd("").should == "111\n"
+      wwtd("").should include "111\n"
     end
 
     it "runs with script" do
       write "Rakefile", "task(:foo){ puts 111 }"
       write ".travis.yml", "script: rake foo"
-      wwtd("").should == "111\n"
+      wwtd("").should include "111\n"
     end
 
     it "bundles with if there is a Gemfile" do
@@ -78,12 +78,35 @@ describe WWTD do
     it "runs with given gemfile" do
       write_default_gemfile
       bundle
-      sh "mv Gemfile Geemfile && mv Gemfile.lock Geemfile.lock"
+      sh "mv Gemfile Gemfile2 && mv Gemfile.lock Gemfile2.lock"
       write "Rakefile", "task(:default) { puts %Q{RAKE: \#{Rake::VERSION} -- \#{ENV['BUNDLE_GEMFILE']}} }"
-      write ".travis.yml", "gemfile: Geemfile"
+      write ".travis.yml", "gemfile: Gemfile2"
       result = wwtd("")
       result.should include "bundle install --deployment\n"
-      result.should include "\nRAKE: 0.9.2.2 -- Geemfile\n"
+      result.should include "\nRAKE: 0.9.2.2 -- Gemfile2\n"
+    end
+
+    it "can run multiple" do
+      write ".travis.yml", <<-YML.gsub("        ", "")
+        rvm:
+          - 2.0.0
+          - 1.9.3
+        gemfile:
+          - Gemfile1
+          - Gemfile2
+      YML
+      write_default_gemfile
+      sh "mv Gemfile Gemfile1"
+      write_default_gemfile "0.9.6"
+      sh "mv Gemfile Gemfile2"
+      write "Rakefile", "task(:default) { puts %Q{RAKE: \#{Rake::VERSION} -- \#{ENV['BUNDLE_GEMFILE']} -- \#{RUBY_VERSION}} }"
+      result = wwtd("")
+      result.scan(/RAKE:.*/).sort.should == [
+        "RAKE: 0.9.2.2 -- Gemfile1 -- 1.9.3",
+        "RAKE: 0.9.2.2 -- Gemfile1 -- 2.0.0",
+        "RAKE: 0.9.6 -- Gemfile2 -- 1.9.3",
+        "RAKE: 0.9.6 -- Gemfile2 -- 2.0.0",
+      ]
     end
 
     def write(file, content)
@@ -98,6 +121,33 @@ describe WWTD do
       result = Bundler.with_clean_env { `#{command} #{"2>&1" unless options[:keep_output]}` }
       raise "FAILED #{command}\n#{result}" if $?.success? == !!options[:fail]
       result
+    end
+  end
+
+  describe ".matrix" do
+    def call(config)
+      WWTD.send(:matrix, config)
+    end
+
+    it "builds simple from simple" do
+      call({}).should == [{}]
+    end
+
+    it "builds simple from 1-element array" do
+      call({"gemfile" => ["Gemfile"]}).should == [{"gemfile" => "Gemfile"}]
+    end
+
+    it "builds from array" do
+      call({"gemfile" => ["Gemfile1", "Gemfile2"]}).should == [{"gemfile" => "Gemfile1"}, {"gemfile" => "Gemfile2"}]
+    end
+
+    it "builds from multiple arrays" do
+      call({"gemfile" => ["Gemfile1", "Gemfile2"], "rvm" => ["a", "b"]}).should == [
+        {"rvm"=>"a", "gemfile"=>"Gemfile1"},
+        {"rvm"=>"a", "gemfile"=>"Gemfile2"},
+        {"rvm"=>"b", "gemfile"=>"Gemfile1"},
+        {"rvm"=>"b", "gemfile"=>"Gemfile2"},
+      ]
     end
   end
 end
