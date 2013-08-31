@@ -68,6 +68,13 @@ describe WWTD do
       wwtd("").should include "bundle install --quiet\n"
     end
 
+    it "runs with given rvm version" do
+      other = (RUBY_VERSION == "1.9.3" ? "2.0.0" : "1.9.3")
+      write ".travis.yml", "rvm: #{other}"
+      write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_VERSION}} }"
+      wwtd("").should include "RUBY: #{other}"
+    end
+
     def write(file, content)
       File.write(file, content)
     end

@@ -11,10 +11,12 @@ module WWTD
       config = (File.exist?(CONFIG) ? YAML.load_file(CONFIG) : {})
       default_command = (File.exist?("Gemfile") ? "bundle exec rake" : "rake")
       command = config["script"] || default_command
+      rvm = "rvm #{config["rvm"]} do " if config["rvm"]
+      command = "#{rvm}#{command}"
 
       if File.exist?("Gemfile")
         default_bundler_args = (File.exist?("Gemfile.lock") ? "--deployment" : "")
-        sh "bundle install #{config["bundler_args"] || default_bundler_args}".strip
+        sh "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args}".strip
       end
       exec(command)
     end
