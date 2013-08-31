@@ -86,27 +86,48 @@ describe WWTD do
       result.should include "\nRAKE: 0.9.2.2 -- Gemfile2\n"
     end
 
-    it "can run multiple" do
-      write ".travis.yml", <<-YML.gsub("        ", "")
-        rvm:
-          - 2.0.0
-          - 1.9.3
-        gemfile:
-          - Gemfile1
-          - Gemfile2
-      YML
-      write_default_gemfile
-      sh "mv Gemfile Gemfile1"
-      write_default_gemfile "0.9.6"
-      sh "mv Gemfile Gemfile2"
-      write "Rakefile", "task(:default) { puts %Q{RAKE: \#{Rake::VERSION} -- \#{ENV['BUNDLE_GEMFILE']} -- \#{RUBY_VERSION}} }"
-      result = wwtd("")
-      result.scan(/RAKE:.*/).sort.should == [
-        "RAKE: 0.9.2.2 -- Gemfile1 -- 1.9.3",
-        "RAKE: 0.9.2.2 -- Gemfile1 -- 2.0.0",
-        "RAKE: 0.9.6 -- Gemfile2 -- 1.9.3",
-        "RAKE: 0.9.6 -- Gemfile2 -- 2.0.0",
-      ]
+    describe "with multiple" do
+      before do
+        write ".travis.yml", <<-YML.gsub("          ", "")
+          rvm:
+            - 2.0.0
+            - 1.9.3
+          gemfile:
+            - Gemfile1
+            - Gemfile2
+        YML
+        write_default_gemfile
+        sh "mv Gemfile Gemfile1"
+        write_default_gemfile "0.9.6"
+        sh "mv Gemfile Gemfile2"
+        write "Rakefile", "task(:default) { puts %Q{RAKE: \#{Rake::VERSION} -- \#{ENV['BUNDLE_GEMFILE']} -- \#{RUBY_VERSION}} }"
+      end
+
+      it "can run multiple" do
+        result = wwtd("")
+        result.scan(/RAKE:.*/).sort.should == [
+          "RAKE: 0.9.2.2 -- Gemfile1 -- 1.9.3",
+          "RAKE: 0.9.2.2 -- Gemfile1 -- 2.0.0",
+          "RAKE: 0.9.6 -- Gemfile2 -- 1.9.3",
+          "RAKE: 0.9.6 -- Gemfile2 -- 2.0.0",
+        ]
+      end
+
+      it "can exclude" do
+        write(".travis.yml", File.read(".travis.yml") + <<-YAML.gsub("          ", ""))
+          matrix:
+            exclude:
+              - rvm: 1.9.3
+                gemfile: Gemfile2
+              - rvm: 2.0.0
+                gemfile: Gemfile1
+        YAML
+        result = wwtd("")
+        result.scan(/RAKE:.*/).sort.should == [
+          "RAKE: 0.9.2.2 -- Gemfile1 -- 1.9.3",
+          "RAKE: 0.9.6 -- Gemfile2 -- 2.0.0",
+        ]
+      end
     end
 
     def write(file, content)
@@ -133,6 +154,10 @@ describe WWTD do
       call({}).should == [{}]
     end
 
+    it "keeps unknown" do
+      call({"foo" => ["bar"]}).should == [{"foo" => ["bar"]}]
+    end
+
     it "builds simple from 1-element array" do
       call({"gemfile" => ["Gemfile"]}).should == [{"gemfile" => "Gemfile"}]
     end
@@ -142,10 +167,26 @@ describe WWTD do
     end
 
     it "builds from multiple arrays" do
-      call({"gemfile" => ["Gemfile1", "Gemfile2"], "rvm" => ["a", "b"]}).should == [
+      call("gemfile" => ["Gemfile1", "Gemfile2"], "rvm" => ["a", "b"]).should == [
         {"rvm"=>"a", "gemfile"=>"Gemfile1"},
         {"rvm"=>"a", "gemfile"=>"Gemfile2"},
         {"rvm"=>"b", "gemfile"=>"Gemfile1"},
+        {"rvm"=>"b", "gemfile"=>"Gemfile2"},
+      ]
+    end
+
+    it "excludes with" do
+      call(
+        "gemfile" => ["Gemfile1", "Gemfile2"],
+        "rvm" => ["a", "b"],
+        "matrix" => {
+          "exclude" => [
+            {"gemfile" => "Gemfile1", "rvm" => "b"}
+          ]
+        }
+      ).should == [
+        {"rvm"=>"a", "gemfile"=>"Gemfile1"},
+        {"rvm"=>"a", "gemfile"=>"Gemfile2"},
         {"rvm"=>"b", "gemfile"=>"Gemfile2"},
       ]
     end

@@ -26,6 +26,9 @@ module WWTD
       end.compact
 
       components = components.inject([{}]) { |all, v| all.product(v).map! { |values| merge_hashes(values) } }
+      if config["matrix"] && config["matrix"]["exclude"]
+        components -= config.delete("matrix").delete("exclude")
+      end
       components.map! { |c| config.merge(c) }
     end
 
