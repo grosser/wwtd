@@ -9,6 +9,7 @@ Gem::Specification.new name, WWTD::VERSION do |s|
   s.homepage = "http://github.com/grosser/#{name}"
   s.files = `git ls-files lib/ bin/`.split("\n")
   s.license = "MIT"
+  s.executables = ["wwtd"]
   cert = File.expand_path("~/.ssh/gem-private-key-grosser.pem")
   if File.exist?(cert)
     s.signing_key = cert

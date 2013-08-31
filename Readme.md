@@ -1,14 +1,24 @@
-Travis simulator so you do not need to wait for the build
+Travis simulator so you do not need to wait for the build.<br/>
+Reads your .travis.yml and runs what travis would run.
 
 Install
 =======
 
-    gem install wwtd
+```Bash
+gem install wwtd
+```
 
 Usage
 =====
 
-    CODE EXAMPLE
+```Bash
+wwtd
+Ruby ree with gemfiles/rails23.gemfile
+....
+Ruby 1.9.3 with gemfiles/rails23.gemfile
+....
+```
+
 
 Author
 ======
