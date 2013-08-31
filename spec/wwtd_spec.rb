@@ -75,6 +75,17 @@ describe WWTD do
       wwtd("").should include "RUBY: #{other}"
     end
 
+    it "runs with given gemfile" do
+      write_default_gemfile
+      bundle
+      sh "mv Gemfile Geemfile && mv Gemfile.lock Geemfile.lock"
+      write "Rakefile", "task(:default) { puts %Q{RAKE: \#{Rake::VERSION} -- \#{ENV['BUNDLE_GEMFILE']}} }"
+      write ".travis.yml", "gemfile: Geemfile"
+      result = wwtd("")
+      result.should include "bundle install --deployment\n"
+      result.should include "\nRAKE: 0.9.2.2 -- Geemfile\n"
+    end
+
     def write(file, content)
       File.write(file, content)
     end
