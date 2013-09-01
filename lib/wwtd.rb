@@ -16,7 +16,7 @@ module WWTD
       puts "Ignoring: #{ignored.join(", ")}" unless ignored.empty?
 
       success = matrix(config).map do |config|
-        puts "config #{config.to_a.sort.map { |k,v| "#{k}: v" }.join(", ")}" unless config.empty?
+        puts "config #{config.to_a.sort.map { |k,v| "#{k}: #{truncate(v, 30)}" }.join(", ")}" unless config.empty?
         run_config(config)
       end
       success.all? ? 0 : 1
@@ -37,6 +37,14 @@ module WWTD
       components.map! { |c| config.merge(c) }
     end
 
+    def truncate(value, number)
+      if value.size > number
+        "#{value[0..27]}..."
+      else
+        value
+      end
+    end
+
     def clone(object)
       Marshal.load(Marshal.dump(object))
     end
@@ -54,16 +62,18 @@ module WWTD
         ENV[name] = value
       end
 
-      default_command = (File.exist?(gemfile) ? "bundle exec rake" : "rake")
-      command = config["script"] || default_command
-      rvm = "rvm #{config["rvm"]} do " if config["rvm"]
-      command = "#{rvm}#{command}"
+      with_clean_env do
+        default_command = (File.exist?(gemfile) ? "bundle exec rake" : "rake")
+        command = config["script"] || default_command
+        rvm = "rvm #{config["rvm"]} do " if config["rvm"]
+        command = "#{rvm}#{command}"
 
-      if File.exist?(gemfile)
-        default_bundler_args = (File.exist?("#{gemfile}.lock") ? "--deployment" : "")
-        sh "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args}".strip
+        if File.exist?(gemfile)
+          default_bundler_args = (File.exist?("#{gemfile}.lock") ? "--deployment" : "")
+          sh "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args} --quiet".strip
+        end
+        sh(command)
       end
-      sh(command)
     end
 
     # http://grosser.it/2010/12/11/sh-without-rake/
@@ -75,6 +85,14 @@ module WWTD
         end
       end
       $?.success?
+    end
+
+    def with_clean_env(&block)
+      if defined?(Bundler)
+        Bundler.with_clean_env(&block)
+      else
+        yield
+      end
     end
 
     def parse_options(argv)
