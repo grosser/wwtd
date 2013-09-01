@@ -121,7 +121,7 @@ module WWTD
         if wants_bundle
           flock(lock) do
             bundle_command = "#{rvm}bundle install #{config["bundler_args"] || "--deployment"}"
-            return false unless sh "#{bundle_command.strip} --quiet --path vendor/bundle"
+            return false unless sh "#{bundle_command.strip} --quiet --path #{Dir.pwd}/vendor/bundle"
           end
         end
 
