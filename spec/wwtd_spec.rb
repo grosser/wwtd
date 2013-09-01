@@ -91,7 +91,7 @@ describe WWTD do
     it "prints ignored items" do
       write_default_rakefile
       write ".travis.yml", "foo: bar\nbar: baz"
-      wwtd("").should include "Ignoring: foo, bar"
+      wwtd("").should include "Ignoring: bar, foo"
     end
 
     it "can execute with env" do
@@ -198,7 +198,7 @@ describe WWTD do
     end
 
     def write(file, content)
-      File.write(file, content)
+      File.open(file, "w") { |f| f.write content }
     end
 
     def wwtd(command, options={})

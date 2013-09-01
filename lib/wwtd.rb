@@ -19,12 +19,13 @@ module WWTD
       config = (File.exist?(CONFIG) ? YAML.load_file(CONFIG) : {})
       config.delete("source_key") # we don't need that we already have the source
       ignored = config.keys - UNDERSTOOD
-      puts "Ignoring: #{ignored.join(", ")}" unless ignored.empty?
+      puts "Ignoring: #{ignored.sort.join(", ")}" unless ignored.empty?
 
       # Execute tests
       matrix = matrix(config)
-      results = Tempfile.open "wwtd" do |lock|
-        Parallel.map(matrix.each_with_index, :in_processes => options[:parallel].to_i) do |config, i|
+      results = nil
+      Tempfile.open "wwtd" do |lock|
+        results = Parallel.map(matrix.each_with_index, :in_processes => options[:parallel].to_i) do |config, i|
           ENV["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
 
           config_info = config_info(matrix, config)
