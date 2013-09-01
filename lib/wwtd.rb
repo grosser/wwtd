@@ -152,7 +152,7 @@ module WWTD
       options = {}
       OptionParser.new do |opts|
         opts.banner = <<-BANNER.gsub(/^ {10}/, "")
-            Travis simulator so you do not need to wait for the build.
+            WWTD: Travis simulator - faster + no more waiting for build emails
 
             Usage:
                 wwtd

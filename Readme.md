@@ -1,4 +1,4 @@
-Travis simulator so you do not need to wait for the build.<br/>
+WWTD: Travis simulator - faster + no more waiting for build emails.<br/>
 Reads your .travis.yml and runs what travis would run.
 
 ![Results](http://dl.dropbox.com/u/2670385/Web/wwtd-results.png)
