@@ -2,6 +2,7 @@ require "wwtd/version"
 require "optparse"
 require "yaml"
 require "shellwords"
+require "parallel"
 
 module WWTD
   CONFIG = ".travis.yml"
@@ -11,7 +12,7 @@ module WWTD
 
   class << self
     def run(argv)
-      parse_options(argv)
+      options = parse_options(argv)
 
       # Read actual .travis.yml
       config = (File.exist?(CONFIG) ? YAML.load_file(CONFIG) : {})
@@ -21,7 +22,9 @@ module WWTD
 
       # Execute tests
       matrix = matrix(config)
-      results = matrix.map do |config|
+      results = Parallel.map(matrix.each_with_index, :in_processes => options[:parallel].to_i) do |config, i|
+        ENV["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
+
         config_info = config_info(matrix, config)
         puts "#{yellow("START")} #{config_info}"
 
@@ -156,6 +159,7 @@ module WWTD
 
             Options:
         BANNER
+        opts.on("-p", "--parallel [PROCESSES]", Integer, "Run in parallel") { |c| options[:parallel] = c || Parallel.processor_count }
         opts.on("-h", "--help", "Show this.") { puts opts; exit }
         opts.on("-v", "--version", "Show Version"){ puts WWTD::VERSION; exit}
       end.parse!(argv)

@@ -15,10 +15,25 @@ Usage
 
 ```Bash
 wwtd
-Ruby ree with gemfiles/rails23.gemfile
+START gemfile: gemfiles/rails32.gemfile, rvm: 2.0
 ....
-Ruby 1.9.3 with gemfiles/rails23.gemfile
+START gemfile: gemfiles/rails32.gemfile, rvm: 1.9.3
 ....
+Results:
+SUCCESS gemfile: gemfiles/rails32.gemfile, rvm: 2.0
+FAILURE gemfile: gemfiles/rails32.gemfile, rvm: 1.9.3
+```
+
+### Parallel
+
+ - might show errors that do not happen in serial builds
+ - runs number-of-processors builds in parallel
+ - runs each configuration in a separate process
+ - adds `ENV["TEST_ENV_NUMBER"]` (1 = "" 2 = "2") so you can do `db = "test#{ENV['TEST_ENV_NUMBER']}"`
+
+```Bash
+wwtd --parallel
+same result, but number-of-processors faster :)
 ```
 
 Author

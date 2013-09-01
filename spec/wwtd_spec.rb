@@ -1,9 +1,4 @@
 require "spec_helper"
-require "tmpdir"
-
-def bundle
-  Bundler.with_clean_env { sh "bundle" }
-end
 
 describe WWTD do
   it "has a VERSION" do
@@ -11,6 +6,10 @@ describe WWTD do
   end
 
   describe "CLI" do
+    def bundle
+      Bundler.with_clean_env { sh "bundle" }
+    end
+
     def write_default_gemfile(rake_version="0.9.2.2")
       write "Gemfile", "source 'https://rubygems.org'\ngem 'rake', '#{rake_version}'"
     end
@@ -113,6 +112,31 @@ describe WWTD do
       write_default_rakefile
       write ".travis.yml", "gemfile: Gemfile1"
       wwtd("", :fail => true)
+    end
+
+    describe "--parallel" do
+      it "runs in parallel" do
+        sleep = 3
+        write "Rakefile", "task(:default) { sleep #{sleep} }"
+        write ".travis.yml", "env:\n - XXX=1\n - XXX=2"
+        result = ""
+        Benchmark.realtime { result = wwtd("--parallel") }.should < sleep * 2
+        result.split("Results:").last.should == "\nSUCCESS env: XXX=1\nSUCCESS env: XXX=2\n"
+      end
+
+      it "sets TEST_ENV_NUMBER when in parallel" do
+        write "Rakefile", "task(:default) { puts %Q{TEST:\#{ENV['TEST_ENV_NUMBER'].inspect}} }"
+        write ".travis.yml", "env:\n - XXX=1\n - XXX=2"
+        result = wwtd("--parallel")
+        result.scan(/TEST:.*/).sort.should == ['TEST:""', 'TEST:"2"']
+      end
+
+      it "does not set TEST_ENV_NUMBER when not in parallel" do
+        write "Rakefile", "task(:default) { puts %Q{TEST:\#{ENV['TEST_ENV_NUMBER'].inspect}} }"
+        write ".travis.yml", "env: XXX=2"
+        result = wwtd("")
+        result.scan(/TEST:.*/).should == ['TEST:nil']
+      end
     end
 
     describe "with multiple" do
@@ -238,6 +262,20 @@ describe WWTD do
     it "truncates long values" do
       c = {"a" => "1"*40}
       call([c, c.merge("a" => "2")], c).should == "a: #{"1"*27}..."
+    end
+  end
+
+  describe ".parse_options" do
+    def call(*args)
+      WWTD.send(:parse_options, *args)
+    end
+
+    it "parses simple parallel" do
+      call(["--parallel"])[:parallel].should == Parallel.processor_count
+    end
+
+    it "parses parallel with number" do
+      call(["--parallel", "5"])[:parallel].should == 5
     end
   end
 end
