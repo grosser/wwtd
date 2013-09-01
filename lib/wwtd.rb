@@ -22,10 +22,13 @@ module WWTD
       # Execute tests
       matrix = matrix(config)
       results = matrix.map do |config|
-        puts "#{yellow("START")} #{config.to_a.sort.map { |k,v| "#{k}: #{truncate(v, 30)}" }.join(",\t")}" unless config.empty?
+        config_info = config_info(matrix, config)
+        puts "#{yellow("START")} #{config_info}"
+
         result = run_config(config)
-        info = "#{result ? green("SUCCESS") : red("FAILURE")} #{config.to_a.sort.map { |k,v| "#{k}: #{truncate(v, 30)}" }.join(", ")}" unless config.empty?
+        info = "#{result ? green("SUCCESS") : red("FAILURE")} #{config_info}"
         puts info
+
         [result, info]
       end
 
@@ -39,6 +42,11 @@ module WWTD
     end
 
     private
+
+    def config_info(matrix, config)
+      config = config.select { |k,v| matrix.map { |c| c[k] }.uniq.size > 1 }.sort
+      "#{config.map { |k,v| "#{k}: #{truncate(v, 30)}" }.join(", ")}"
+    end
 
     def tint(color, string)
       if $stdout.tty?
@@ -76,7 +84,7 @@ module WWTD
     def truncate(value, number)
       value = value.to_s # accidental numbers like 'rvm: 2.0'
       if value.size > number
-        "#{value[0..27]}..."
+        "#{value[0...27]}..."
       else
         value
       end

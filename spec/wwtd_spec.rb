@@ -224,4 +224,20 @@ describe WWTD do
       ]
     end
   end
+
+  describe ".config_info" do
+    def call(*args)
+      WWTD.send(:config_info, *args)
+    end
+
+    it "prints a summary" do
+      c = {"a" => "1", "b" => "1"}
+      call([c, c.merge("a" => "2")], c).should == "a: 1"
+    end
+
+    it "truncates long values" do
+      c = {"a" => "1"*40}
+      call([c, c.merge("a" => "2")], c).should == "a: #{"1"*27}..."
+    end
+  end
 end
