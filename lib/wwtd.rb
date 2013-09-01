@@ -5,6 +5,7 @@ require "shellwords"
 
 module WWTD
   CONFIG = ".travis.yml"
+  DEFAULT_GEMFILE = "Gemfile"
   COMBINATORS = ["rvm", "gemfile", "env"]
   UNDERSTOOD = ["rvm", "gemfile", "matrix", "script", "bundler_args"]
 
@@ -16,8 +17,10 @@ module WWTD
       puts "Ignoring: #{ignored.join(", ")}" unless ignored.empty?
 
       success = matrix(config).map do |config|
-        puts "config #{config.to_a.sort.map { |k,v| "#{k}: #{truncate(v, 30)}" }.join(", ")}" unless config.empty?
-        run_config(config)
+        puts "Start: #{config.to_a.sort.map { |k,v| "#{k}: #{truncate(v, 30)}" }.join(", ")}" unless config.empty?
+        result = run_config(config)
+        puts "#{result ? "SUCCESS" : "FAILURE"} #{config.to_a.sort.map { |k,v| "#{k}: #{truncate(v, 30)}" }.join(", ")}" unless config.empty?
+        result
       end
       success.all? ? 0 : 1
     end
@@ -54,8 +57,10 @@ module WWTD
     end
 
     def run_config(config)
-      gemfile = config["gemfile"] || "Gemfile"
-      ENV["BUNDLE_GEMFILE"] = gemfile
+      if gemfile = config["gemfile"]
+        ENV["BUNDLE_GEMFILE"] = gemfile
+      end
+      wants_bundle = gemfile || File.exist?(DEFAULT_GEMFILE)
 
       Shellwords.split(config["env"] || "").each do |part|
         name, value = part.split("=", 2)
@@ -63,15 +68,18 @@ module WWTD
       end
 
       with_clean_env do
-        default_command = (File.exist?(gemfile) ? "bundle exec rake" : "rake")
-        command = config["script"] || default_command
         rvm = "rvm #{config["rvm"]} do " if config["rvm"]
+
+        if wants_bundle
+          default_bundler_args = (File.exist?("#{gemfile || DEFAULT_GEMFILE}.lock") ? "--deployment" : "")
+          bundle_command = "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args}"
+          return false unless sh "#{bundle_command.strip} --quiet"
+        end
+
+        default_command = (wants_bundle ? "bundle exec rake" : "rake")
+        command = config["script"] || default_command
         command = "#{rvm}#{command}"
 
-        if File.exist?(gemfile)
-          default_bundler_args = (File.exist?("#{gemfile}.lock") ? "--deployment" : "")
-          sh "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args} --quiet".strip
-        end
         sh(command)
       end
     end

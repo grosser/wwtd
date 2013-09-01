@@ -44,11 +44,11 @@ describe WWTD do
       wwtd("").should include "111\n"
     end
 
-    it "bundles with if there is a Gemfile" do
+    it "bundles if there is a Gemfile" do
       write_default_gemfile
       write "Rakefile", "task(:default) { puts %Q{RAKE: \#{Rake::VERSION}} }"
       result = wwtd("")
-      result.should include "bundle install\n"
+      result.should include "bundle install --quiet\n"
       result.should include "\nRAKE: 0.9.2.2\n"
     end
 
@@ -57,15 +57,15 @@ describe WWTD do
       bundle
       write "Rakefile", "task(:default) { puts %Q{RAKE: \#{Rake::VERSION}} }"
       result = wwtd("")
-      result.should include "bundle install --deployment\n"
+      result.should include "bundle install --deployment --quiet\n"
       result.should include "\nRAKE: 0.9.2.2\n"
     end
 
     it "bundles with bundler_args" do
       write_default_gemfile
       write_default_rakefile
-      write(".travis.yml", "bundler_args: --quiet")
-      wwtd("").should include "bundle install --quiet\n"
+      write(".travis.yml", "bundler_args: --path vendor/bundle")
+      wwtd("").should include "bundle install --path vendor/bundle --quiet\n"
     end
 
     it "runs with given rvm version" do
@@ -82,7 +82,7 @@ describe WWTD do
       write "Rakefile", "task(:default) { puts %Q{RAKE: \#{Rake::VERSION} -- \#{ENV['BUNDLE_GEMFILE']}} }"
       write ".travis.yml", "gemfile: Gemfile2"
       result = wwtd("")
-      result.should include "bundle install --deployment\n"
+      result.should include "bundle install --deployment --quiet\n"
       result.should include "\nRAKE: 0.9.2.2 -- Gemfile2\n"
     end
 
@@ -96,6 +96,23 @@ describe WWTD do
       write ".travis.yml", "env: FOO='bar baz' BAR=12=3"
       write "Rakefile", "task(:default){ puts %Q{ENV:\#{ENV['FOO']}--\#{ENV['BAR']}} }"
       wwtd("").should include "ENV:bar baz--12=3"
+    end
+
+    it "fails if bundler fails" do
+      write_default_rakefile
+      write "Gemfile", "xxx"
+      write ".travis.yml", "script: rake"
+      wwtd("", :fail => true)
+    end
+
+    it "fails when a command fails" do
+      wwtd("", :fail => true)
+    end
+
+    it "fails with missing gemfile" do
+      write_default_rakefile
+      write ".travis.yml", "gemfile: Gemfile1"
+      wwtd("", :fail => true)
     end
 
     describe "with multiple" do
@@ -152,7 +169,7 @@ describe WWTD do
 
     def sh(command, options={})
       result = Bundler.with_clean_env { `#{command} #{"2>&1" unless options[:keep_output]}` }
-      raise "FAILED #{command}\n#{result}" if $?.success? == !!options[:fail]
+      raise "#{options[:fail] ? "SUCCESS" : "FAIL"} #{command}\n#{result}" if $?.success? == !!options[:fail]
       result
     end
   end
