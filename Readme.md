@@ -9,6 +9,7 @@ Install
 ```Bash
 gem install wwtd
 ```
+(bracelets sold separately)
 
 Usage
 =====

@@ -3,6 +3,7 @@ require "optparse"
 require "yaml"
 require "shellwords"
 require "parallel"
+require "tempfile"
 
 module WWTD
   CONFIG = ".travis.yml"
@@ -22,17 +23,19 @@ module WWTD
 
       # Execute tests
       matrix = matrix(config)
-      results = Parallel.map(matrix.each_with_index, :in_processes => options[:parallel].to_i) do |config, i|
-        ENV["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
+      results = Tempfile.open "wwtd" do |lock|
+        Parallel.map(matrix.each_with_index, :in_processes => options[:parallel].to_i) do |config, i|
+          ENV["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
 
-        config_info = config_info(matrix, config)
-        puts "#{yellow("START")} #{config_info}"
+          config_info = config_info(matrix, config)
+          puts "#{yellow("START")} #{config_info}"
 
-        result = run_config(config)
-        info = "#{result ? green("SUCCESS") : red("FAILURE")} #{config_info}"
-        puts info
+          result = run_config(config, lock)
+          info = "#{result ? green("SUCCESS") : red("FAILURE")} #{config_info}"
+          puts info
 
-        [result, info]
+          [result, info]
+        end
       end
 
       # Summary
@@ -101,7 +104,7 @@ module WWTD
       array.inject({}) { |all, v| all.merge!(v); all }
     end
 
-    def run_config(config)
+    def run_config(config, lock)
       if gemfile = config["gemfile"]
         ENV["BUNDLE_GEMFILE"] = gemfile
       end
@@ -116,9 +119,11 @@ module WWTD
         rvm = "rvm #{config["rvm"]} do " if config["rvm"]
 
         if wants_bundle
-          default_bundler_args = (File.exist?("#{gemfile || DEFAULT_GEMFILE}.lock") ? "--deployment" : "")
-          bundle_command = "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args}"
-          return false unless sh "#{bundle_command.strip} --quiet"
+          lock.flock(File::LOCK_EX) do
+            default_bundler_args = (File.exist?("#{gemfile || DEFAULT_GEMFILE}.lock") ? "--deployment" : "")
+            bundle_command = "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args}"
+            return false unless sh "#{bundle_command.strip} --quiet"
+          end
         end
 
         default_command = (wants_bundle ? "bundle exec rake" : "rake")

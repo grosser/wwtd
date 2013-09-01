@@ -115,10 +115,13 @@ describe WWTD do
     end
 
     describe "--parallel" do
+      before do
+        write ".travis.yml", "env:\n - XXX=1\n - XXX=2"
+      end
+
       it "runs in parallel" do
         sleep = 3
         write "Rakefile", "task(:default) { sleep #{sleep} }"
-        write ".travis.yml", "env:\n - XXX=1\n - XXX=2"
         result = ""
         Benchmark.realtime { result = wwtd("--parallel") }.should < sleep * 2
         result.split("Results:").last.should == "\nSUCCESS env: XXX=1\nSUCCESS env: XXX=2\n"
@@ -126,7 +129,6 @@ describe WWTD do
 
       it "sets TEST_ENV_NUMBER when in parallel" do
         write "Rakefile", "task(:default) { puts %Q{TEST:\#{ENV['TEST_ENV_NUMBER'].inspect}} }"
-        write ".travis.yml", "env:\n - XXX=1\n - XXX=2"
         result = wwtd("--parallel")
         result.scan(/TEST:.*/).sort.should == ['TEST:""', 'TEST:"2"']
       end
@@ -136,6 +138,15 @@ describe WWTD do
         write ".travis.yml", "env: XXX=2"
         result = wwtd("")
         result.scan(/TEST:.*/).should == ['TEST:nil']
+      end
+
+      it "does not bundle 2 gemfiles at once" do
+        write_default_gemfile
+        write "Gemfile", File.read("Gemfile") + "\nputs 'BUNDLE-START'; sleep 1; puts 'BUNDLE-END'"
+        write "Gemfile2", File.read("Gemfile")
+        write_default_rakefile
+        result = wwtd "--parallel"
+        result.scan(/BUNDLE-.*/).should == ["BUNDLE-START", "BUNDLE-END", "BUNDLE-START", "BUNDLE-END"]
       end
     end
 
