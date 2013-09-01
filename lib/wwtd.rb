@@ -119,10 +119,9 @@ module WWTD
         rvm = "rvm #{config["rvm"]} do " if config["rvm"]
 
         if wants_bundle
-          lock.flock(File::LOCK_EX) do
-            default_bundler_args = (File.exist?("#{gemfile || DEFAULT_GEMFILE}.lock") ? "--deployment" : "")
-            bundle_command = "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args}"
-            return false unless sh "#{bundle_command.strip} --quiet"
+          flock(lock) do
+            bundle_command = "#{rvm}bundle install #{config["bundler_args"] || "--deployment"}"
+            return false unless sh "#{bundle_command.strip} --quiet --path vendor/bundle"
           end
         end
 
@@ -132,6 +131,13 @@ module WWTD
 
         sh(command)
       end
+    end
+
+    def flock(file)
+      file.flock(File::LOCK_EX)
+      yield
+    ensure
+      file.flock(File::LOCK_UN)
     end
 
     # http://grosser.it/2010/12/11/sh-without-rake/
