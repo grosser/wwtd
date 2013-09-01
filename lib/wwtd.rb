@@ -134,10 +134,14 @@ module WWTD
     end
 
     def flock(file)
-      file.flock(File::LOCK_EX)
-      yield
-    ensure
-      file.flock(File::LOCK_UN)
+      File.open(file.path) do |f|
+        begin
+          f.flock(File::LOCK_EX)
+          yield
+        ensure
+          f.flock(File::LOCK_UN)
+        end
+      end
     end
 
     # http://grosser.it/2010/12/11/sh-without-rake/
