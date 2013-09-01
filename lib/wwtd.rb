@@ -4,6 +4,7 @@ require "yaml"
 require "shellwords"
 require "parallel"
 require "tempfile"
+require "tmpdir"
 
 module WWTD
   CONFIG = ".travis.yml"
@@ -24,18 +25,20 @@ module WWTD
       # Execute tests
       matrix = matrix(config)
       results = nil
-      Tempfile.open "wwtd" do |lock|
-        results = Parallel.map(matrix.each_with_index, :in_processes => options[:parallel].to_i) do |config, i|
-          ENV["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
+      with_clean_dot_bundle do
+        Tempfile.open "wwtd" do |lock|
+          results = Parallel.map(matrix.each_with_index, :in_processes => options[:parallel].to_i) do |config, i|
+            ENV["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
 
-          config_info = config_info(matrix, config)
-          puts "#{yellow("START")} #{config_info}"
+            config_info = config_info(matrix, config)
+            puts "#{yellow("START")} #{config_info}"
 
-          result = run_config(config, lock)
-          info = "#{result ? green("SUCCESS") : red("FAILURE")} #{config_info}"
-          puts info
+            result = run_config(config, lock)
+            info = "#{result ? green("SUCCESS") : red("FAILURE")} #{config_info}"
+            puts info
 
-          [result, info]
+            [result, info]
+          end
         end
       end
 
@@ -49,6 +52,19 @@ module WWTD
     end
 
     private
+
+    def with_clean_dot_bundle
+      had_old = File.exist?(".bundle")
+      Dir.mktmpdir do |dir|
+        begin
+          sh "mv .bundle #{dir}" if had_old
+          yield
+        ensure
+          sh "rm -rf .bundle"
+          sh "mv #{dir}/.bundle ." if had_old
+        end
+      end
+    end
 
     def config_info(matrix, config)
       config = config.select { |k,v| matrix.map { |c| c[k] }.uniq.size > 1 }.sort

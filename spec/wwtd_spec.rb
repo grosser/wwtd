@@ -117,6 +117,30 @@ describe WWTD do
       wwtd("", :fail => true)
     end
 
+    describe ".bundle" do
+      it "does not leave a .bundle behind" do
+        write_default_rakefile
+        write_default_gemfile
+        bundle
+        wwtd("")
+        File.exist?(".bundle").should == false
+      end
+
+      it "restores old .bundle" do
+        sh "mkdir .bundle"
+        write ".bundle/foo", "xxx"
+
+        write_default_rakefile
+        write_default_gemfile
+        bundle
+
+        wwtd("")
+
+        File.exist?(".bundle").should == true
+        sh("ls .bundle").should == "foo\n"
+      end
+    end
+
     describe "--parallel" do
       before do
         write ".travis.yml", "env:\n - XXX=1\n - XXX=2"
