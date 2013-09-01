@@ -12,20 +12,53 @@ module WWTD
   class << self
     def run(argv)
       parse_options(argv)
+
+      # Read actual .travis.yml
       config = (File.exist?(CONFIG) ? YAML.load_file(CONFIG) : {})
+      config.delete("source_key") # we don't need that we already have the source
       ignored = config.keys - UNDERSTOOD
       puts "Ignoring: #{ignored.join(", ")}" unless ignored.empty?
 
-      success = matrix(config).map do |config|
-        puts "Start: #{config.to_a.sort.map { |k,v| "#{k}: #{truncate(v, 30)}" }.join(", ")}" unless config.empty?
+      # Execute tests
+      matrix = matrix(config)
+      results = matrix.map do |config|
+        puts "#{yellow("START")} #{config.to_a.sort.map { |k,v| "#{k}: #{truncate(v, 30)}" }.join(",\t")}" unless config.empty?
         result = run_config(config)
-        puts "#{result ? "SUCCESS" : "FAILURE"} #{config.to_a.sort.map { |k,v| "#{k}: #{truncate(v, 30)}" }.join(", ")}" unless config.empty?
-        result
+        info = "#{result ? green("SUCCESS") : red("FAILURE")} #{config.to_a.sort.map { |k,v| "#{k}: #{truncate(v, 30)}" }.join(", ")}" unless config.empty?
+        puts info
+        [result, info]
       end
-      success.all? ? 0 : 1
+
+      # Summary
+      if matrix.size > 1
+        puts "\nResults:"
+        puts results.map(&:last)
+      end
+
+      results.all?(&:first) ? 0 : 1
     end
 
     private
+
+    def tint(color, string)
+      if $stdout.tty?
+        "\e[#{color}m#{string}\e[0m"
+      else
+        string
+      end
+    end
+
+    def red(string)
+      tint(31, string)
+    end
+
+    def green(string)
+      tint(32, string)
+    end
+
+    def yellow(string)
+      tint(33, string)
+    end
 
     def matrix(config)
       components = COMBINATORS.map do |multiplier|
@@ -41,6 +74,7 @@ module WWTD
     end
 
     def truncate(value, number)
+      value = value.to_s # accidental numbers like 'rvm: 2.0'
       if value.size > number
         "#{value[0..27]}..."
       else
