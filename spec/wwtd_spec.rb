@@ -29,7 +29,7 @@ describe WWTD do
     end
 
     it "shows --help" do
-      wwtd("--help").should include("Travis simulator so you do not need to wait for the build")
+      wwtd("--help").should include("Travis simulator")
     end
 
     it "runs without .travis.yml" do
@@ -57,15 +57,15 @@ describe WWTD do
       bundle
       write "Rakefile", "task(:default) { puts %Q{RAKE: \#{Rake::VERSION}} }"
       result = wwtd("")
-      result.should include "bundle install --deployment --quiet\n"
+      result.should include "bundle install --deployment"
       result.should include "\nRAKE: 0.9.2.2\n"
     end
 
     it "bundles with bundler_args" do
       write_default_gemfile
       write_default_rakefile
-      write(".travis.yml", "bundler_args: --path foo")
-      wwtd("").should include "bundle install --path foo --quiet\n"
+      write(".travis.yml", "bundler_args: --no-color")
+      wwtd("").should include "bundle install --no-color"
     end
 
     it "runs with given rvm version" do
@@ -80,9 +80,9 @@ describe WWTD do
       bundle
       sh "mkdir xxx && mv Gemfile xxx/Gemfile2 && mv Gemfile.lock xxx/Gemfile2.lock"
       write "Rakefile", "task(:default) { puts %Q{RAKE: \#{Rake::VERSION} -- \#{ENV['BUNDLE_GEMFILE']}} }"
-      write ".travis.yml", "gemfile: Gemfile2"
+      write ".travis.yml", "gemfile: xxx/Gemfile2"
       result = wwtd("")
-      result.should include "bundle install --deployment --quiet\n"
+      result.should include "bundle install --deployment"
       result.should include "\nRAKE: 0.9.2.2 -- xxx/Gemfile2\n"
       File.exist?("vendor/bundle").should == true
       File.exist?("gemfiles/vendor/bundle").should == false
@@ -149,7 +149,7 @@ describe WWTD do
         write "Gemfile2", File.read("Gemfile")
         write_default_rakefile
         result = wwtd "--parallel"
-        result.scan(/BUNDLE-.*/).should == ["BUNDLE-START", "BUNDLE-END", "BUNDLE-START", "BUNDLE-END"]
+        result.scan(/BUNDLE-.*/).should == ["BUNDLE-START", "BUNDLE-END"] * 5
       end
     end
 

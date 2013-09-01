@@ -120,7 +120,8 @@ module WWTD
 
         if wants_bundle
           flock(lock) do
-            bundle_command = "#{rvm}bundle install #{config["bundler_args"] || "--deployment"}"
+            default_bundler_args = "--deployment" if File.exist?("#{gemfile || DEFAULT_GEMFILE}.lock")
+            bundle_command = "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args}"
             return false unless sh "#{bundle_command.strip} --quiet --path #{Dir.pwd}/vendor/bundle"
           end
         end
