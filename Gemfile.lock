@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    wwtd (0.1.3)
+    wwtd (0.1.4)
       parallel
 
 GEM
