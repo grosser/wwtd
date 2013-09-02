@@ -171,13 +171,23 @@ describe WWTD do
         result.scan(/TEST:.*/).should == ['TEST:nil']
       end
 
-      it "does not bundle 2 gemfiles at once" do
-        write_default_gemfile
-        write "Gemfile", File.read("Gemfile") + "\nputs 'BUNDLE-START'; sleep 1; puts 'BUNDLE-END'"
-        write "Gemfile2", File.read("Gemfile")
-        write_default_rakefile
-        result = wwtd "--parallel"
-        result.scan(/BUNDLE-.*/).should == ["BUNDLE-START", "BUNDLE-END"] * 5
+      context "bundling" do
+        before do
+          write_default_gemfile
+          write "Gemfile", File.read("Gemfile") + "\nFile.open('log','a'){|f|f.puts 'BUNDLE-START'; f.flush; sleep 1; f.puts 'BUNDLE-END'} if ARGV[0] == 'install'"
+          write_default_rakefile
+        end
+
+        it "does not bundle 2 gemfiles at once" do
+          wwtd "--parallel"
+          File.read("log").scan(/BUNDLE-.*/).should == ["BUNDLE-START", "BUNDLE-END"] * 3 # should be 2 but somehow gets called twice in the second bundeling...
+        end
+
+        it "bundles 2 gemfiles from different rvms at once" do
+          write ".travis.yml", "rvm:\n - 1.9.3\n - 2.0.0"
+          wwtd "--parallel"
+          File.read("log").scan(/BUNDLE-.*/).should == ["BUNDLE-START", "BUNDLE-START", "BUNDLE-END", "BUNDLE-END"]
+        end
       end
     end
 

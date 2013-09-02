@@ -26,7 +26,7 @@ module WWTD
       matrix = matrix(config)
       results = nil
       with_clean_dot_bundle do
-        Tempfile.open "wwtd" do |lock|
+        Dir.mktmpdir do |lock|
           results = Parallel.map(matrix.each_with_index, :in_processes => options[:parallel].to_i) do |config, i|
             ENV["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
 
@@ -136,7 +136,7 @@ module WWTD
         rvm = "rvm #{config["rvm"]} do " if config["rvm"]
 
         if wants_bundle
-          flock(lock) do
+          flock("#{lock}/#{config["rvm"] || "rvm"}") do
             default_bundler_args = "--deployment --path #{Dir.pwd}/vendor/bundle" if committed?("#{gemfile || DEFAULT_GEMFILE}.lock")
             bundle_command = "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args}"
             return false unless sh "#{bundle_command.strip} --quiet"
@@ -152,12 +152,12 @@ module WWTD
     end
 
     def committed?(file)
-      @committed_files ||= `git ls-files`.split("\n")
+      @committed_files ||= (File.exist?(".git") && `git ls-files`.split("\n")) || []
       @committed_files.include?(file)
     end
 
     def flock(file)
-      File.open(file.path) do |f|
+      File.open(file, "w") do |f|
         begin
           f.flock(File::LOCK_EX)
           yield
