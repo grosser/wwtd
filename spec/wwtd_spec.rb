@@ -45,20 +45,23 @@ describe WWTD do
 
     it "bundles if there is a Gemfile" do
       write_default_gemfile
+      bundle
       write "Rakefile", "task(:default) { puts %Q{RAKE: \#{Rake::VERSION}} }"
       result = wwtd("")
-      result.should include "bundle install"
+      result.should include "bundle install --quiet"
       result.should include "\nRAKE: 0.9.2.2\n"
-      File.exist?("vendor/bundle").should == true
+      File.exist?("vendor/bundle").should == false
     end
 
-    it "bundles with --deployment if there is a Gemfile.lock" do
+    it "bundles with --deployment if lockfile is committed" do
       write_default_gemfile
       bundle
+      sh "git init && git add ."
       write "Rakefile", "task(:default) { puts %Q{RAKE: \#{Rake::VERSION}} }"
       result = wwtd("")
       result.should include "bundle install --deployment"
       result.should include "\nRAKE: 0.9.2.2\n"
+      File.exist?("vendor/bundle").should == true
     end
 
     it "bundles with bundler_args" do
@@ -79,6 +82,7 @@ describe WWTD do
       write_default_gemfile
       bundle
       sh "mkdir xxx && mv Gemfile xxx/Gemfile2 && mv Gemfile.lock xxx/Gemfile2.lock"
+      sh "git init && git add ."
       write "Rakefile", "task(:default) { puts %Q{RAKE: \#{Rake::VERSION} -- \#{ENV['BUNDLE_GEMFILE']}} }"
       write ".travis.yml", "gemfile: xxx/Gemfile2"
       result = wwtd("")

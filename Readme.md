@@ -25,6 +25,10 @@ SUCCESS gemfile: gemfiles/rails32.gemfile, rvm: 2.0
 FAILURE gemfile: gemfiles/rails32.gemfile, rvm: 1.9.3
 ```
 
+### Tips
+ - vendor/bundle is created if you have a committed lock file, add it to `.gitignore` or better yet to your global `.gitignore`.
+ - if you do not want `--deployment` but want a lockfile add `bundler_args: ""` to your .travis.yml
+
 ### Parallel
 
  - might show errors that do not happen in serial builds

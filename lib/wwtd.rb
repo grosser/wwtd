@@ -137,9 +137,9 @@ module WWTD
 
         if wants_bundle
           flock(lock) do
-            default_bundler_args = "--deployment" if File.exist?("#{gemfile || DEFAULT_GEMFILE}.lock")
+            default_bundler_args = "--deployment --path #{Dir.pwd}/vendor/bundle" if committed?("#{gemfile || DEFAULT_GEMFILE}.lock")
             bundle_command = "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args}"
-            return false unless sh "#{bundle_command.strip} --quiet --path #{Dir.pwd}/vendor/bundle"
+            return false unless sh "#{bundle_command.strip} --quiet"
           end
         end
 
@@ -149,6 +149,11 @@ module WWTD
 
         sh(command)
       end
+    end
+
+    def committed?(file)
+      @committed_files ||= `git ls-files`.split("\n")
+      @committed_files.include?(file)
     end
 
     def flock(file)
