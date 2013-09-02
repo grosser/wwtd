@@ -24,9 +24,23 @@ module WWTD
 
       # Execute tests
       matrix = matrix(config)
+      results = run_full_matrix(matrix, options)
+
+      # Summary
+      if matrix.size > 1
+        puts "\nResults:"
+        puts results.map(&:last)
+      end
+
+      results.all?(&:first) ? 0 : 1
+    end
+
+    private
+
+    def run_full_matrix(matrix, options)
       results = nil
       with_clean_dot_bundle do
-        Dir.mktmpdir do |lock|
+        Dir.mktmpdir do |lock| # does not return values in ruby 1.8
           results = Parallel.map(matrix.each_with_index, :in_processes => options[:parallel].to_i) do |config, i|
             ENV["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
 
@@ -41,17 +55,8 @@ module WWTD
           end
         end
       end
-
-      # Summary
-      if matrix.size > 1
-        puts "\nResults:"
-        puts results.map(&:last)
-      end
-
-      results.all?(&:first) ? 0 : 1
+      results
     end
-
-    private
 
     def with_clean_dot_bundle
       had_old = File.exist?(".bundle")
