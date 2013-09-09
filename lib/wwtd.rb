@@ -138,7 +138,7 @@ module WWTD
       end
 
       with_clean_env do
-        rvm = "rvm #{config["rvm"]} do " if config["rvm"]
+        rvm = "rvm #{ruby_version(config["rvm"])} do " if config["rvm"]
 
         if wants_bundle
           flock("#{lock}/#{config["rvm"] || "rvm"}") do
@@ -154,6 +154,14 @@ module WWTD
 
         sh(command)
       end
+    end
+
+    # Taken from https://github.com/travis-ci/travis-build/blob/master/lib/travis/build/script/rvm.rb
+    def ruby_version(rvm)
+      rvm.to_s.
+        gsub(/-(1[89]|2[01])mode$/, '-d\1').
+        gsub(/^rbx$/, 'rbx-weekly-d18').
+        gsub(/^rbx-d(\d{2})$/, 'rbx-weekly-d\1')
     end
 
     def committed?(file)

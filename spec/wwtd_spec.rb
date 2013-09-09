@@ -78,6 +78,14 @@ describe WWTD do
       wwtd("").should include "RUBY: #{other}"
     end
 
+    it "runs with given travis version" do
+      other_travis_version = (RUBY_VERSION == "1.9.3" ? "jruby-20mode" : "jruby-19mode")
+      other_rvm_version = (RUBY_VERSION == "1.9.3" ? "2.0.0" : "1.9.3")
+      write ".travis.yml", "rvm: #{other_travis_version}"
+      write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_VERSION}} }"
+      wwtd("").should include "RUBY: #{other_rvm_version}"
+    end
+
     it "runs with given gemfile" do
       write_default_gemfile
       bundle
