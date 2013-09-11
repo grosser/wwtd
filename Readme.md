@@ -41,8 +41,12 @@ wwtd --parallel
 same result, but number-of-processors faster :)
 ```
 
-Author
-======
+Authors
+=======
+
+### [Contributors](https://github.com/grosser/wwtd/contributors)
+ - [Kris Leech](https://github.com/krisleech)
+
 [Michael Grosser](http://grosser.it)<br/>
 michael@grosser.it<br/>
 License: MIT<br/>
