@@ -130,22 +130,41 @@ module WWTD
       end
 
       with_clean_env do
-        rvm = "rvm #{ruby_version(config["rvm"])} do " if config["rvm"]
+        switch_ruby = switch_ruby(config["rvm"])
 
         if wants_bundle
           flock("#{lock}/#{config["rvm"] || "rvm"}") do
             default_bundler_args = "--deployment --path #{Dir.pwd}/vendor/bundle" if committed?("#{gemfile || DEFAULT_GEMFILE}.lock")
-            bundle_command = "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args}"
+            bundle_command = "#{switch_ruby}bundle install #{config["bundler_args"] || default_bundler_args}"
             return false unless sh "#{bundle_command.strip} --quiet"
           end
         end
 
         default_command = (wants_bundle ? "bundle exec rake" : "rake")
         command = config["script"] || default_command
-        command = "#{rvm}#{command}"
+        command = "#{switch_ruby}#{command}"
 
         sh(command)
       end
+    end
+
+    def switch_ruby(rvm)
+      version = ruby_version(rvm)
+      if rvm?
+        "rvm #{version} do "
+      else
+        exact_version = available_rbenv_versions.reverse.detect { |v| v.start_with?(version) }
+        "export RBENV_VERSION=#{exact_version || version}; "
+      end
+    end
+
+    def rvm?
+      return @rvm if defined?(@rvm)
+      @rvm = system("which rvm")
+    end
+
+    def available_rbenv_versions
+      `rbenv versions`.split("\n").map { |l| l.sub(/^[\* ]+/, "").split(" ").first }
     end
 
     # Taken from https://github.com/travis-ci/travis-build/blob/master/lib/travis/build/script/rvm.rb
