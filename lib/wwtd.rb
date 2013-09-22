@@ -97,16 +97,16 @@ module WWTD
     end
 
     def matrix(config)
-      components = COMBINATORS.map do |multiplier|
+      matrix = [{}]
+      COMBINATORS.each do |multiplier|
         next unless values = config[multiplier]
-        Array(values).map { |v| {multiplier => v} }
-      end.compact
-
-      components = components.inject([{}]) { |all, v| all.product(v).map! { |values| merge_hashes(values) } }
-      if config["matrix"] && config["matrix"]["exclude"]
-        components -= config.delete("matrix").delete("exclude")
+        matrix = Array(values).map { |value| matrix.map { |c| c.merge(multiplier => value) } }.flatten
       end
-      components.map! { |c| config.merge(c) }
+
+      if config["matrix"] && config["matrix"]["exclude"]
+        matrix -= config.delete("matrix").delete("exclude")
+      end
+      matrix.map! { |c| config.merge(c) }
     end
 
     def truncate(value, number)
@@ -116,14 +116,6 @@ module WWTD
       else
         value
       end
-    end
-
-    def clone(object)
-      Marshal.load(Marshal.dump(object))
-    end
-
-    def merge_hashes(array)
-      array.inject({}) { |all, v| all.merge!(v); all }
     end
 
     def run_config(config, lock)

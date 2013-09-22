@@ -283,10 +283,10 @@ describe WWTD do
 
     it "builds from multiple arrays" do
       call("gemfile" => ["Gemfile1", "Gemfile2"], "rvm" => ["a", "b"]).should == [
-        {"rvm"=>"a", "gemfile"=>"Gemfile1"},
-        {"rvm"=>"a", "gemfile"=>"Gemfile2"},
-        {"rvm"=>"b", "gemfile"=>"Gemfile1"},
-        {"rvm"=>"b", "gemfile"=>"Gemfile2"},
+        {"gemfile"=>"Gemfile1", "rvm"=>"a"},
+        {"gemfile"=>"Gemfile1", "rvm"=>"b"},
+        {"gemfile"=>"Gemfile2", "rvm"=>"a"},
+        {"gemfile"=>"Gemfile2", "rvm"=>"b"}
       ]
     end
 
