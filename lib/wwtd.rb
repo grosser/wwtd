@@ -13,7 +13,7 @@ module WWTD
   UNDERSTOOD = ["rvm", "gemfile", "matrix", "script", "bundler_args"]
 
   class << self
-    def run(argv)
+    def run(argv=[])
       options = parse_options(argv)
 
       # Read actual .travis.yml
@@ -119,17 +119,17 @@ module WWTD
     end
 
     def run_config(config, lock)
-      if gemfile = config["gemfile"]
-        ENV["BUNDLE_GEMFILE"] = gemfile
-      end
-      wants_bundle = gemfile || File.exist?(DEFAULT_GEMFILE)
-
-      Shellwords.split(config["env"] || "").each do |part|
-        name, value = part.split("=", 2)
-        ENV[name] = value
-      end
-
       with_clean_env do
+        Shellwords.split(config["env"] || "").each do |part|
+          name, value = part.split("=", 2)
+          ENV[name] = value
+        end
+
+        if gemfile = config["gemfile"]
+          ENV["BUNDLE_GEMFILE"] = gemfile
+        end
+        wants_bundle = gemfile || File.exist?(DEFAULT_GEMFILE)
+
         switch_ruby = switch_ruby(config["rvm"])
 
         if wants_bundle
@@ -154,27 +154,25 @@ module WWTD
       if rvm_executable
         "rvm #{version} do "
       else
-        if rbenv_executable
-          switch_path(version, "rbenv")
-        elsif chruby?
-          switch_path(version, "chruby")
+        if ruby_root = ENV["RUBY_ROOT"] # chruby or RUBY_ROOT set
+          switch_path(File.dirname(ruby_root), version, "chruby")
+        elsif rbenv_executable
+          rubies_root = cache_command("which rbenv").sub(%r{/(\.?rbenv)/.*}, "/\\1") + "/versions"
+          switch_path(rubies_root, version, "rbenv")
         else
           "false # could not find ruby version changer # "
         end
       end
     end
 
-    def switch_path(version, changer)
+    def switch_path(rubies_root, version, changer)
       prefix = extract_jruby_rbenv_options!(version)
-      if bin_path = send("#{changer}_bin_path", version)
-        "#{prefix}PATH=#{bin_path}:$PATH "
+      if ruby_root = ruby_root(rubies_root, version)
+        gem_home = Dir["#{ruby_root}/lib/ruby/gems/*"].first
+        "#{prefix}PATH=#{ruby_root}/bin:$PATH GEM_HOME=#{gem_home} "
       else
         "false # could not find #{version} in #{changer} # "
       end
-    end
-
-    def chruby?
-      ENV["RUBY_ROOT"] # chruby is a shell function not available from inside ruby
     end
 
     def rvm_executable
@@ -193,16 +191,8 @@ module WWTD
       end
     end
 
-    def chruby_bin_path(version)
-      found_version_path = Dir.glob("#{ENV['RUBY_ROOT']}/../*").detect { |p| File.basename(p).include?(version) }
-      "#{found_version_path}/bin" if found_version_path
-    end
-
-    def rbenv_bin_path(version)
-      known_version = capture("rbenv versions | grep #{version}")
-      known_version = known_version.split("\n").last[2..-1].split(" ")[0]
-      rbenv_root = rbenv_executable.sub(%r{/(\.?rbenv)/.*}, "/\\1")
-      "#{rbenv_root}/versions/#{known_version}/bin"
+    def ruby_root(root, version)
+      Dir.glob("#{root}/*").detect { |p| File.basename(p).start_with?(version) }
     end
 
     def cache(key)
