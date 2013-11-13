@@ -153,20 +153,49 @@ module WWTD
       version = normalize_ruby_version(version)
       if rvm_executable
         "rvm #{version} do "
-      elsif rbenv_executable
-        prefix = extract_jruby_rbenv_options!(version)
-        if bin_path = rbenv_bin_path(version)
-          "#{prefix}PATH=#{bin_path}:$PATH "
-        else
-          "false # could not find #{version} in rbenv # "
-        end
       else
-        "false # could not find ruby version changer # "
+        if rbenv_executable
+          switch_path(version, "rbenv")
+        elsif chruby?
+          switch_path(version, "chruby")
+        else
+          "false # could not find ruby version changer # "
+        end
       end
     end
 
+    def switch_path(version, changer)
+      prefix = extract_jruby_rbenv_options!(version)
+      if bin_path = send("#{changer}_bin_path", version)
+        "#{prefix}PATH=#{bin_path}:$PATH "
+      else
+        "false # could not find #{version} in #{changer} # "
+      end
+    end
+
+    def chruby?
+      ENV["RUBY_ROOT"] # chruby is a shell function not available from inside ruby
+    end
+
     def rvm_executable
-      @rvm_executable ||= capture("which rvm")
+      cache_command("which rvm")
+    end
+
+    def rbenv_executable
+      cache_command("which rbenv")
+    end
+
+    def cache_command(command)
+      cache(command) do
+        if result = capture(command)
+          result.strip
+        end
+      end
+    end
+
+    def chruby_bin_path(version)
+      found_version_path = Dir.glob("#{ENV['RUBY_ROOT']}/../*").detect { |p| File.basename(p).include?(version) }
+      "#{found_version_path}/bin" if found_version_path
     end
 
     def rbenv_bin_path(version)
@@ -176,9 +205,13 @@ module WWTD
       "#{rbenv_root}/versions/#{known_version}/bin"
     end
 
-    def rbenv_executable
-      @rbenv_executable ||= capture("which rbenv")
-      @rbenv_executable ? @rbenv_executable.strip : nil
+    def cache(key)
+      @cache ||= {}
+      if @cache.key?(key)
+        @cache[key]
+      else
+        @cache[key] = yield
+      end
     end
 
     # set ruby-opts for jruby flavors
