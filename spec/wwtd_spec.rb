@@ -327,6 +327,11 @@ describe WWTD do
       c = {"a" => "1"*40}
       call([c, c.merge("a" => "2")], c).should == "a: #{"1"*27}..."
     end
+
+    it "aligns values" do
+      c = {"a" => "1", "b" => "1"}
+      call([c, {"a" => "111", "b" => "11"}], c).should == "a: 1   b: 1 "
+    end
   end
 
   describe ".parse_options" do
