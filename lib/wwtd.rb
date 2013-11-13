@@ -155,17 +155,17 @@ module WWTD
         "rvm #{version} do "
       else
         if ruby_root = ENV["RUBY_ROOT"] # chruby or RUBY_ROOT set
-          switch_path(File.dirname(ruby_root), version, "chruby")
+          switch_path(File.dirname(ruby_root), version)
         elsif rbenv_executable
           rubies_root = cache_command("which rbenv").sub(%r{/(\.?rbenv)/.*}, "/\\1") + "/versions"
-          switch_path(rubies_root, version, "rbenv")
+          switch_path(rubies_root, version)
         else
-          "false # could not find ruby version changer # "
+          "false # could not find rvm, rbenv or RUBY_ROOT # "
         end
       end
     end
 
-    def switch_path(rubies_root, version, changer)
+    def switch_path(rubies_root, version)
       extract_jruby_rbenv_options!(version)
       if ruby_root = ruby_root(rubies_root, version)
         gem_home = Dir["#{ruby_root}/lib/ruby/gems/*"].first
@@ -173,7 +173,7 @@ module WWTD
         ENV["GEM_HOME"] = gem_home
         ""
       else
-        "false # could not find #{version} in #{changer} # "
+        "false # could not find #{version} in #{rubies_root} # "
       end
     end
 
