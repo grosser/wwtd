@@ -160,6 +160,8 @@ module WWTD
         else
           "false # could not find #{version} in rbenv # "
         end
+      else
+        "false # could not find ruby version changer # "
       end
     end
 

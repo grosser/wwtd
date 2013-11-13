@@ -110,6 +110,12 @@ describe WWTD do
       wwtd("").should include "ENV:bar baz--12=3"
     end
 
+    it "fails with unknown ruby version" do
+      write ".travis.yml", "rvm: x.5.1"
+      write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_VERSION}} }"
+      wwtd("", :fail => true)
+    end
+
     it "fails if bundler fails" do
       write_default_rakefile
       write "Gemfile", "xxx"
