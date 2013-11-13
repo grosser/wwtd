@@ -1,5 +1,5 @@
 WWTD: Travis simulator - faster + no more waiting for build emails.<br/>
-Reads your .travis.yml and runs what travis would run.
+Reads your .travis.yml and runs what travis would run (via rvm or rbenv).
 
 ![Results](http://dl.dropbox.com/u/2670385/Web/wwtd-results.png)
 

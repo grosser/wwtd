@@ -130,26 +130,71 @@ module WWTD
       end
 
       with_clean_env do
-        rvm = "rvm #{ruby_version(config["rvm"])} do " if config["rvm"]
+        switch_ruby = switch_ruby(config["rvm"])
 
         if wants_bundle
           flock("#{lock}/#{config["rvm"] || "rvm"}") do
             default_bundler_args = "--deployment --path #{Dir.pwd}/vendor/bundle" if committed?("#{gemfile || DEFAULT_GEMFILE}.lock")
-            bundle_command = "#{rvm}bundle install #{config["bundler_args"] || default_bundler_args}"
+            bundle_command = "#{switch_ruby}bundle install #{config["bundler_args"] || default_bundler_args}"
             return false unless sh "#{bundle_command.strip} --quiet"
           end
         end
 
         default_command = (wants_bundle ? "bundle exec rake" : "rake")
         command = config["script"] || default_command
-        command = "#{rvm}#{command}"
+        command = "#{switch_ruby}#{command}"
 
         sh(command)
       end
     end
 
+    def switch_ruby(version)
+      return unless version
+      version = normalize_ruby_version(version)
+      if rvm_executable
+        "rvm #{version} do "
+      elsif rbenv_executable
+        prefix = extract_jruby_rbenv_options!(version)
+        if bin_path = rbenv_bin_path(version)
+          "#{prefix}PATH=#{bin_path}:$PATH "
+        else
+          "false # could not find #{version} in rbenv # "
+        end
+      end
+    end
+
+    def rvm_executable
+      @rvm_executable ||= capture("which rvm")
+    end
+
+    def rbenv_bin_path(version)
+      known_version = capture("rbenv versions | grep #{version}")
+      known_version = known_version.split("\n").last[2..-1].split(" ")[0]
+      rbenv_root = rbenv_executable.sub(%r{/(\.?rbenv)/.*}, "/\\1")
+      "#{rbenv_root}/versions/#{known_version}/bin"
+    end
+
+    def rbenv_executable
+      @rbenv_executable ||= capture("which rbenv")
+      @rbenv_executable ? @rbenv_executable.strip : nil
+    end
+
+    # set ruby-opts for jruby flavors
+    def extract_jruby_rbenv_options!(version)
+      if version.sub!("-d19", "")
+        "JRUBY_OPTS=--1.9 "
+      elsif version.sub!("-d18", "")
+        "JRUBY_OPTS=--1.8 "
+      end
+    end
+
+    def capture(command)
+      result = `#{command}`
+      $?.success? ? result : nil
+    end
+
     # Taken from https://github.com/travis-ci/travis-build/blob/master/lib/travis/build/script/rvm.rb
-    def ruby_version(rvm)
+    def normalize_ruby_version(rvm)
       rvm.to_s.
         gsub(/-(\d{2})mode$/, '-d\1').
         gsub(/^rbx$/, 'rbx-weekly-d18').
