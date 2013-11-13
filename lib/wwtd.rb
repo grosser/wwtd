@@ -166,10 +166,12 @@ module WWTD
     end
 
     def switch_path(rubies_root, version, changer)
-      prefix = extract_jruby_rbenv_options!(version)
+      extract_jruby_rbenv_options!(version)
       if ruby_root = ruby_root(rubies_root, version)
         gem_home = Dir["#{ruby_root}/lib/ruby/gems/*"].first
-        "#{prefix}PATH=#{ruby_root}/bin:$PATH GEM_HOME=#{gem_home} "
+        ENV["PATH"] = "#{ruby_root}/bin:#{ENV["PATH"]}"
+        ENV["GEM_HOME"] = gem_home
+        ""
       else
         "false # could not find #{version} in #{changer} # "
       end
@@ -207,9 +209,9 @@ module WWTD
     # set ruby-opts for jruby flavors
     def extract_jruby_rbenv_options!(version)
       if version.sub!("-d19", "")
-        "JRUBY_OPTS=--1.9 "
+        ENV["JRUBY_OPTS"] = "--1.9"
       elsif version.sub!("-d18", "")
-        "JRUBY_OPTS=--1.8 "
+        ENV["JRUBY_OPTS"] = "--1.8"
       end
     end
 
