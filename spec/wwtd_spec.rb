@@ -186,7 +186,7 @@ describe WWTD do
       context "bundling" do
         before do
           write_default_gemfile
-          write "Gemfile", File.read("Gemfile") + "\nFile.open('log','a'){|f|f.puts 'BUNDLE-START'; f.flush; sleep 2; f.puts 'BUNDLE-END'} if ARGV[0] == 'install'"
+          write "Gemfile", File.read("Gemfile") + "\nFile.open('log','a'){|f|f.puts 'BUNDLE-START'; f.flush; sleep 3; f.puts 'BUNDLE-END'} if ARGV[0] == 'install'"
           write_default_rakefile
         end
 
