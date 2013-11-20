@@ -248,6 +248,28 @@ describe WWTD do
       end
     end
 
+    describe "rake" do
+      before do
+        write "Gemfile", <<-RUBY
+          source 'https://rubygems.org'
+          gem 'wwtd', :path => '#{Bundler.root}'
+          gem 'rake'
+        RUBY
+        write "Rakefile", <<-RUBY
+          require 'wwtd/tasks'
+          task(:default) { puts 'YES-IT-WORKS' }
+        RUBY
+      end
+
+      it "runs normally" do
+        sh("bundle exec rake wwtd").should include "YES-IT-WORKS"
+      end
+
+      it "runs in parallel" do
+        sh("bundle exec rake wwtd:parallel").should include "YES-IT-WORKS"
+      end
+    end
+
     def write(file, content)
       File.open(file, "w") { |f| f.write content }
     end
