@@ -1,13 +1,14 @@
 module WWTD
   module CLI
     INFO_MAX_CHARACTERS = 30
-    COLOR_MAP = {:start => :yellow, :success => :green}
+    STATE_COLOR_MAP = {:start => :yellow, :success => :green}
+    ASCII_COLORS = {:red => 31, :green => 32, :yellow => 33}
 
     class << self
       def run(argv=[])
         # Read travis.yml
         matrix, ignored = ::WWTD.read_travis_yml
-        puts "Ignoring: #{ignored.sort.join(", ")}" unless ignored.empty?
+        puts "Ignoring: #{ignored.sort.join(", ")}" if ignored.any?
 
         # Execute tests
         results = ::WWTD.run(matrix, parse_options(argv)) do |state, config|
@@ -25,10 +26,28 @@ module WWTD
 
       private
 
+      def parse_options(argv)
+        options = {}
+        OptionParser.new do |opts|
+          opts.banner = <<-BANNER.gsub(/^ {10}/, "")
+            WWTD: Travis simulator - faster + no more waiting for build emails
+
+            Usage:
+                wwtd
+
+            Options:
+          BANNER
+          opts.on("-p", "--parallel [PROCESSES]", Integer, "Run in parallel") { |c| options[:parallel] = c || Parallel.processor_count }
+          opts.on("-h", "--help", "Show this.") { puts opts; exit }
+          opts.on("-v", "--version", "Show Version"){ puts WWTD::VERSION; exit}
+        end.parse!(argv)
+        options
+      end
+
       def info_line(state, config, matrix)
         config_info = config_info(matrix, config)
-        color = COLOR_MAP[state] || :red
-        "#{Colors.send(color, state.to_s.upcase)} #{config_info}"
+        color = STATE_COLOR_MAP[state] || :red
+        "#{colorize(color, state.to_s.upcase)} #{config_info}"
       end
 
       # human readable config without options that are the same in all configs
@@ -51,22 +70,12 @@ module WWTD
         end
       end
 
-      def parse_options(argv)
-        options = {}
-        OptionParser.new do |opts|
-          opts.banner = <<-BANNER.gsub(/^ {10}/, "")
-            WWTD: Travis simulator - faster + no more waiting for build emails
-
-            Usage:
-                wwtd
-
-            Options:
-          BANNER
-          opts.on("-p", "--parallel [PROCESSES]", Integer, "Run in parallel") { |c| options[:parallel] = c || Parallel.processor_count }
-          opts.on("-h", "--help", "Show this.") { puts opts; exit }
-          opts.on("-v", "--version", "Show Version"){ puts WWTD::VERSION; exit}
-        end.parse!(argv)
-        options
+      def colorize(color, string)
+        if $stdout.tty?
+          "\e[#{ASCII_COLORS[color]}m#{string}\e[0m"
+        else
+          string
+        end
       end
     end
   end

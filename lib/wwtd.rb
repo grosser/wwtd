@@ -5,7 +5,6 @@ require "shellwords"
 require "parallel"
 require "tempfile"
 require "tmpdir"
-require "wwtd/colors"
 require "wwtd/ruby"
 require "wwtd/cli"
 
