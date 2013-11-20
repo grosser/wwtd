@@ -316,7 +316,7 @@ describe WWTD do
 
   describe ".config_info" do
     def call(*args)
-      WWTD.send(:config_info, *args)
+      WWTD::CLI.send(:config_info, *args)
     end
 
     it "prints a summary" do
@@ -337,7 +337,7 @@ describe WWTD do
 
   describe ".parse_options" do
     def call(*args)
-      WWTD.send(:parse_options, *args)
+      WWTD::CLI.send(:parse_options, *args)
     end
 
     it "parses simple parallel" do
