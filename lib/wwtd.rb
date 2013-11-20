@@ -44,12 +44,16 @@ module WWTD
         Dir.mktmpdir do |lock| # does not return values in ruby 1.8
           results = Parallel.map(matrix.each_with_index, :in_processes => options[:parallel].to_i) do |config, i|
             ENV["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
-
             config_info = config_info(matrix, config)
-            puts "#{yellow("START")} #{config_info}"
 
-            result = run_config(config, lock)
-            info = "#{result ? green("SUCCESS") : red("FAILURE")} #{config_info}"
+            info = if ruby_available?(config["rvm"])
+              puts "#{yellow("START")} #{config_info}"
+              result = run_config(config, lock)
+              "#{result ? green("SUCCESS") : red("FAILURE")} #{config_info}"
+            else
+              "#{red("MISSING")} #{config_info}"
+            end
+
             puts info
 
             [result, info]
@@ -153,19 +157,22 @@ module WWTD
       end
     end
 
+    def ruby_available?(version)
+      !version || switch_ruby(version)
+    end
+
     def switch_ruby(version)
       return unless version
       version = normalize_ruby_version(version)
       if rvm_executable
-        "rvm #{version} do "
+        command = "rvm #{version} do "
+        command if cache_command("#{command} ruby -v")
       else
         if ruby_root = ENV["RUBY_ROOT"] # chruby or RUBY_ROOT set
           switch_path(File.dirname(ruby_root), version)
         elsif rbenv_executable
           rubies_root = cache_command("which rbenv").sub(%r{/(\.?rbenv)/.*}, "/\\1") + "/versions"
           switch_path(rubies_root, version)
-        else
-          "false # could not find rvm, rbenv or RUBY_ROOT # "
         end
       end
     end
@@ -177,8 +184,6 @@ module WWTD
         ENV["PATH"] = "#{ruby_root}/bin:#{ENV["PATH"]}"
         ENV["GEM_HOME"] = gem_home
         ""
-      else
-        "false # could not find #{version} in #{rubies_root} # "
       end
     end
 

@@ -113,7 +113,8 @@ describe WWTD do
     it "fails with unknown ruby version" do
       write ".travis.yml", "rvm: x.5.1"
       write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_VERSION}} }"
-      wwtd("", :fail => true)
+      result = wwtd("", :fail => true)
+      result.should include "MISSING"
     end
 
     it "fails if bundler fails" do
