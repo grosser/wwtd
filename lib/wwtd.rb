@@ -68,6 +68,10 @@ module WWTD
     end
 
     def matrix(config)
+      if config["env"] && config["env"].is_a?(Hash)
+        config["env"] = config["env"].values.map { |v| v.join(" ")}
+      end
+
       matrix = [{}]
       COMBINATORS.each do |multiplier|
         next unless values = config[multiplier]
