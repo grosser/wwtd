@@ -310,6 +310,12 @@ describe WWTD do
       call({"env" => ["A=1", "B=2"]}).should == [{"env" => "A=1"}, {"env" => "B=2"}]
     end
 
+    it "builds from nested env" do
+      call({"env" => {"global" => ["A=1", "B=2"], "local" => ["A=2", "B=3"]}}).should =~ [
+        {"env" => "A=1 B=2"}, {"env" => "A=2 B=3"}
+      ]
+    end
+
     it "builds from multiple arrays" do
       call("gemfile" => ["Gemfile1", "Gemfile2"], "rvm" => ["a", "b"]).should == [
         {"gemfile"=>"Gemfile1", "rvm"=>"a"},
