@@ -5,6 +5,9 @@ module WWTD
         !version || switch_statement(version)
       end
 
+      # - rvm: "rvm xxx do"
+      # - others: env hash
+      # - unknown: nil
       def switch_statement(version)
         return unless version
         version = normalize_ruby_version(version)
@@ -13,23 +16,25 @@ module WWTD
           command if cache_command("#{command} ruby -v")
         else
           if ruby_root = ENV["RUBY_ROOT"] # chruby or RUBY_ROOT set
-            switch_path(File.dirname(ruby_root), version)
+            switch_via_env(File.dirname(ruby_root), version)
           elsif rbenv_executable
             rubies_root = cache_command("which rbenv").sub(%r{/(\.?rbenv)/.*}, "/\\1") + "/versions"
-            switch_path(rubies_root, version)
+            switch_via_env(rubies_root, version)
           end
         end
       end
 
       private
 
-      def switch_path(rubies_root, version)
-        extract_jruby_rbenv_options!(version)
+      def switch_via_env(rubies_root, version)
+        base = extract_jruby_rbenv_options!(version)
         if ruby_root = ruby_root(rubies_root, version)
           gem_home = Dir["#{ruby_root}/lib/ruby/gems/*"].first
-          ENV["PATH"] = "#{ruby_root}/bin:#{ENV["PATH"]}"
-          ENV["GEM_HOME"] = ENV["GEM_PATH"] = gem_home
-          ""
+          base.merge(
+            "PATH" => "#{ruby_root}/bin:#{ENV["PATH"]}",
+            "GEM_HOME" => gem_home,
+            "GEM_PATH" => gem_home
+          )
         end
       end
 
@@ -64,11 +69,12 @@ module WWTD
 
       # set ruby-opts for jruby flavors
       def extract_jruby_rbenv_options!(version)
-        if version.sub!("-d19", "")
-          ENV["JRUBY_OPTS"] = "--1.9"
+        flag = if version.sub!("-d19", "")
+          "--1.9"
         elsif version.sub!("-d18", "")
-          ENV["JRUBY_OPTS"] = "--1.8"
+          "--1.8"
         end
+        { "JRUBY_OPTS" => flag }
       end
 
       def capture(command)
