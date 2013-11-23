@@ -18,6 +18,14 @@ describe WWTD do
       write "Rakefile", "task(:default){ puts 111 }"
     end
 
+    def pending_if(condition, &block)
+      if condition
+        pending(&block)
+      else
+        yield
+      end
+    end
+
     around do |example|
       Dir.mktmpdir do |dir|
         Dir.chdir(dir, &example)
@@ -79,9 +87,11 @@ describe WWTD do
     end
 
     it "runs with given jruby flavor" do
-      write ".travis.yml", "rvm: jruby-18mode"
-      write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_ENGINE}-\#{RUBY_VERSION}} }"
-      wwtd("").should include "RUBY: jruby-1.8.7"
+      pending_if ENV["TRAVIS"] do
+        write ".travis.yml", "rvm: jruby-18mode"
+        write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_ENGINE}-\#{RUBY_VERSION}} }"
+        wwtd("").should include "RUBY: jruby-1.8.7"
+      end
     end
 
     it "runs with given gemfile" do
