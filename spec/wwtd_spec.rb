@@ -369,7 +369,7 @@ describe WWTD do
     end
 
     it "parses simple parallel" do
-      call(["--parallel"])[:parallel].should == Parallel.processor_count
+      call(["--parallel"])[:parallel].should == 4
     end
 
     it "parses parallel with number" do

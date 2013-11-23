@@ -37,7 +37,7 @@ module WWTD
 
             Options:
           BANNER
-          opts.on("-p", "--parallel [PROCESSES]", Integer, "Run in parallel") { |c| options[:parallel] = c || Parallel.processor_count }
+          opts.on("-p", "--parallel [COUNT]", Integer, "Run in parallel") { |c| options[:parallel] = c || 4 }
           opts.on("-h", "--help", "Show this.") { puts opts; exit }
           opts.on("-v", "--version", "Show Version"){ puts WWTD::VERSION; exit}
         end.parse!(argv)

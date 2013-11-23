@@ -2,7 +2,6 @@ require "wwtd/version"
 require "optparse"
 require "yaml"
 require "shellwords"
-require "parallel"
 require "tempfile"
 require "tmpdir"
 require "wwtd/ruby"
@@ -28,7 +27,7 @@ module WWTD
       with_clean_dot_bundle do
         with_clean_env do
           Dir.mktmpdir do |lock| # does not return values in ruby 1.8
-            results = Parallel.map(matrix.each_with_index, :in_processes => options[:parallel].to_i) do |config, i|
+            results = in_multiple_threads(matrix.each_with_index, options[:parallel]) do |config, i|
               # set env as parallel_tests does to reuse existing infrastructure
               env = {}
               env["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
@@ -90,6 +89,20 @@ module WWTD
       else
         yield
       end
+    end
+
+    def in_multiple_threads(data, count)
+      threads = [count || 1, data.size].min
+      data = data.to_a.dup
+      results = []
+      (0...threads).to_a.map do
+        Thread.new do
+          while slice = data.shift
+            results << yield(slice)
+          end
+        end
+      end.each(&:join)
+      results
     end
   end
 end
