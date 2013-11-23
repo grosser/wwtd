@@ -7,7 +7,6 @@ require "tmpdir"
 require "wwtd/ruby"
 require "wwtd/run"
 require "wwtd/cli"
-require "open3"
 
 module WWTD
   CONFIG = ".travis.yml"
@@ -70,16 +69,15 @@ module WWTD
       matrix.map! { |c| config.merge(c) }
     end
 
-    # http://grosser.it/2010/12/11/sh-without-rake/
     def sh(env, cmd=nil)
       cmd, env = env, {} unless cmd
-      puts cmd
-      Open3.popen2(env, cmd) do |stdin, stdout, wait|
-        while str = stdout.gets
-          puts str
-        end
-        wait.value.success?
+      env = if env.any?
+        env.map {|k,v| "export #{k}=#{Shellwords.escape(v)}" }.join(" && ") + " && "
+      else
+        ""
       end
+      puts cmd
+      system("#{env}#{cmd}")
     end
 
     def with_clean_env(&block)
