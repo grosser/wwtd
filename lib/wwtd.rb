@@ -93,8 +93,8 @@ module WWTD
     end
 
     def in_multiple_threads(data, count)
-      threads = [count || 1, data.size].min
       data = data.to_a.dup
+      threads = [count || 1, data.size].min
       results = []
       (0...threads).to_a.map do
         Thread.new do
