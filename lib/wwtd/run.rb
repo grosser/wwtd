@@ -2,6 +2,8 @@ module WWTD
   class Run
     def initialize(config, env, lock)
       @config, @env, @lock = config, env, lock
+      add_env_from_config
+      @switch = build_switch_statement
     end
 
     def execute(&block)
@@ -19,41 +21,47 @@ module WWTD
 
     private
 
-    attr_reader :config, :env, :lock
+    attr_reader :config, :env, :lock, :switch
 
     def success?
-      # TODO extract into method
-      Shellwords.split(config["env"] || "").each do |part|
-        name, value = part.split("=", 2)
-        env[name] = value
+      if wants_bundle?
+        flock File.join(lock, config["rvm"] || "rvm") do
+          default_bundler_args = "--deployment --path #{Dir.pwd}/vendor/bundle" if committed?("#{gemfile || DEFAULT_GEMFILE}.lock")
+          bundle_command = "#{switch}bundle install #{config["bundler_args"] || default_bundler_args}"
+          return false unless sh(env, "#{bundle_command.strip} --quiet")
+        end
       end
 
-      if gemfile = config["gemfile"]
-        env["BUNDLE_GEMFILE"] = gemfile
-      end
+      default_command = (wants_bundle? ? "bundle exec rake" : "rake")
+      command = config["script"] || default_command
+      command = "#{switch}#{command}"
 
-      # END
-      wants_bundle = gemfile || File.exist?(DEFAULT_GEMFILE)
+      sh(env, command)
+    end
 
+    def wants_bundle?
+      gemfile || File.exist?(DEFAULT_GEMFILE)
+    end
+
+    def gemfile
+      config["gemfile"]
+    end
+
+    def build_switch_statement
       switch_ruby = Ruby.switch_statement(config["rvm"])
       if switch_ruby.is_a?(Hash)
         env.merge!(switch_ruby)
         switch_ruby = nil
       end
+      switch_ruby
+    end
 
-      if wants_bundle
-        flock("#{lock}/#{config["rvm"] || "rvm"}") do
-          default_bundler_args = "--deployment --path #{Dir.pwd}/vendor/bundle" if committed?("#{gemfile || DEFAULT_GEMFILE}.lock")
-          bundle_command = "#{switch_ruby}bundle install #{config["bundler_args"] || default_bundler_args}"
-          return false unless sh(env, "#{bundle_command.strip} --quiet")
-        end
+    def add_env_from_config
+      Shellwords.split(config["env"] || "").each do |part|
+        name, value = part.split("=", 2)
+        env[name] = value
       end
-
-      default_command = (wants_bundle ? "bundle exec rake" : "rake")
-      command = config["script"] || default_command
-      command = "#{switch_ruby}#{command}"
-
-      sh(env, command)
+      env["BUNDLE_GEMFILE"] = gemfile if gemfile
     end
 
     def committed?(file)
