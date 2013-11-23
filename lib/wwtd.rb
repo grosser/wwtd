@@ -24,11 +24,10 @@ module WWTD
     end
 
     def run(matrix, options, &block)
-      results = nil
       with_clean_dot_bundle do
         with_clean_env do
-          Dir.mktmpdir do |lock| # does not return values in ruby 1.8
-            results = in_multiple_threads(matrix.each_with_index, options[:parallel]) do |config, i|
+          Dir.mktmpdir do |lock|
+            in_multiple_threads(matrix.each_with_index, options[:parallel]) do |config, i|
               # set env as parallel_tests does to reuse existing infrastructure
               env = {}
               env["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
@@ -37,7 +36,6 @@ module WWTD
           end
         end
       end
-      results
     end
 
     private
