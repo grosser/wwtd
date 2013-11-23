@@ -168,7 +168,7 @@ describe WWTD do
         write "Rakefile", "task(:default) { sleep #{sleep} }"
         result = ""
         Benchmark.realtime { result = wwtd("--parallel") }.should < sleep * 2
-        result.split("Results:").last.should == "\nSUCCESS env: XXX=1\nSUCCESS env: XXX=2\n"
+        result.split("Results:").last.strip.split("\n").sort.should == ["SUCCESS env: XXX=1", "SUCCESS env: XXX=2"]
       end
 
       it "sets TEST_ENV_NUMBER when in parallel" do

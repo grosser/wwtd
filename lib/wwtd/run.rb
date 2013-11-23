@@ -80,17 +80,8 @@ module WWTD
       end
     end
 
-    # http://grosser.it/2010/12/11/sh-without-rake/
-    # http://grosser.it/2010/12/11/sh-without-rake/
-    def sh(env, cmd=nil)
-      cmd, env = env, {} unless cmd
-      puts cmd
-      IO.popen(env, cmd) do |pipe|
-        while str = pipe.gets
-          puts str
-        end
-      end
-      $?.success?
+    def sh(*args)
+      ::WWTD.send(:sh, *args)
     end
   end
 end

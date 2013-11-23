@@ -71,11 +71,11 @@ module WWTD
       matrix.map! { |c| config.merge(c) }
     end
 
-    # TODO reuse from run
     # http://grosser.it/2010/12/11/sh-without-rake/
-    def sh(cmd)
+    def sh(env, cmd=nil)
+      cmd, env = env, {} unless cmd
       puts cmd
-      IO.popen(cmd) do |pipe|
+      IO.popen(env, cmd) do |pipe|
         while str = pipe.gets
           puts str
         end
