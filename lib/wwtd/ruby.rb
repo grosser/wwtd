@@ -28,7 +28,7 @@ module WWTD
         if ruby_root = ruby_root(rubies_root, version)
           gem_home = Dir["#{ruby_root}/lib/ruby/gems/*"].first
           ENV["PATH"] = "#{ruby_root}/bin:#{ENV["PATH"]}"
-          ENV["GEM_HOME"] = gem_home
+          ENV["GEM_HOME"] = ENV["GEM_PATH"] = gem_home
           ""
         end
       end
