@@ -18,7 +18,7 @@ module WWTD
           if ruby_root = ENV["RUBY_ROOT"] # chruby or RUBY_ROOT set
             switch_via_env(File.dirname(ruby_root), version)
           elsif rbenv_executable
-            rubies_root = cache_command("which rbenv").sub(%r{/(\.?rbenv)/.*}, "/\\1") + "/versions"
+            rubies_root = cache_command("rbenv root") + "/versions"
             switch_via_env(rubies_root, version)
           end
         end
