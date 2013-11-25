@@ -53,6 +53,7 @@ Authors
 ### [Contributors](https://github.com/grosser/wwtd/contributors)
  - [Kris Leech](https://github.com/krisleech)
  - [Eirik Dentz Sinclair](https://github.com/edsinclair)
+ - [Lukasz Krystkowiak](https://github.com/lukkry)
 
 [Michael Grosser](http://grosser.it)<br/>
 michael@grosser.it<br/>
