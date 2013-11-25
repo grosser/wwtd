@@ -79,6 +79,13 @@ describe WWTD do
       wwtd("").should include "bundle install --no-color"
     end
 
+    it "casts ruby version to string when creating a path to a lock file" do
+      write_default_gemfile
+      write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_VERSION}} }"
+      write ".travis.yml", "rvm: 2.0"
+      wwtd("").should include "RUBY: 2.0.0"
+    end
+
     it "runs with given rvm version" do
       other = (RUBY_VERSION == "1.9.3" ? "2.0.0" : "1.9.3")
       write ".travis.yml", "rvm: #{other}"
