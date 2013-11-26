@@ -55,7 +55,9 @@ module WWTD
       end
 
       def ruby_root(root, version)
-        Dir.glob("#{root}/*").detect { |p| File.basename(p).start_with?(version) }
+        Dir.glob("#{root}/*").detect do |p|
+          File.basename(p).sub(/^ruby-/,"").start_with?(version)
+        end
       end
 
       def cache(key)
