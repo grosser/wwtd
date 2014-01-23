@@ -71,12 +71,13 @@ module WWTD
 
       # set ruby-opts for jruby flavors
       def extract_jruby_rbenv_options!(version)
-        flag = if version.sub!("-d19", "")
-          "--1.9"
+        if version.sub!("-d19", "")
+          { "JRUBY_OPTS" => "--1.9" }
         elsif version.sub!("-d18", "")
-          "--1.8"
+          { "JRUBY_OPTS" => "--1.8" }
+        else
+          {}
         end
-        { "JRUBY_OPTS" => flag }
       end
 
       def capture(command)

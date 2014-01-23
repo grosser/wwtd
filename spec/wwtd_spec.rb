@@ -101,6 +101,14 @@ describe WWTD do
       end
     end
 
+    it "runs with given jruby flavor" do
+      pending_if ENV["TRAVIS"] do
+        write ".travis.yml", "rvm: jruby"
+        write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_ENGINE}-\#{RUBY_VERSION}} }"
+        wwtd("").should include "RUBY: jruby"
+      end
+    end
+
     it "runs with given gemfile" do
       write_default_gemfile
       bundle
