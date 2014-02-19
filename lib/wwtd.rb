@@ -63,12 +63,13 @@ module WWTD
         matrix = Array(values).map { |value| matrix.map { |c| c.merge(multiplier => value) } }.flatten
       end
 
-      matrix_config = config.delete("matrix")
-      if matrix_config && matrix_config["exclude"]
-        matrix -= matrix_config["exclude"]
-      end
-      if matrix_config && matrix_config["include"]
-        matrix += matrix_config["include"]
+      if matrix_config = config.delete("matrix")
+        if exclude = matrix_config["exclude"]
+          matrix -= exclude
+        end
+        if include = matrix_config["include"]
+          matrix += include
+        end
       end
       matrix.map! { |c| config.merge(c) }
     end
