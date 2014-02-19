@@ -350,19 +350,23 @@ describe WWTD do
       ]
     end
 
-    it "excludes with" do
+    it "excludes and includes" do
       call(
         "gemfile" => ["Gemfile1", "Gemfile2"],
         "rvm" => ["a", "b"],
         "matrix" => {
           "exclude" => [
             {"gemfile" => "Gemfile1", "rvm" => "b"}
-          ]
+          ],
+          "include" => [
+            {"gemfile" => "Gemfile1", "rvm" => "c"}
+          ],
         }
       ).should == [
         {"rvm"=>"a", "gemfile"=>"Gemfile1"},
         {"rvm"=>"a", "gemfile"=>"Gemfile2"},
         {"rvm"=>"b", "gemfile"=>"Gemfile2"},
+        {"rvm"=>"c", "gemfile"=>"Gemfile1"},
       ]
     end
   end
