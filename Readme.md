@@ -54,6 +54,7 @@ Authors
  - [Kris Leech](https://github.com/krisleech)
  - [Eirik Dentz Sinclair](https://github.com/edsinclair)
  - [Lukasz Krystkowiak](https://github.com/lukkry)
+ - [Jeff Dean](https://github.com/zilkey)
 
 [Michael Grosser](http://grosser.it)<br/>
 michael@grosser.it<br/>
