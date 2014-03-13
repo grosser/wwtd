@@ -281,6 +281,19 @@ describe WWTD do
       it "runs in parallel" do
         sh("bundle exec rake wwtd:parallel").should include "YES-IT-WORKS"
       end
+
+      context "when running itself" do
+        before do
+          write "Rakefile", <<-RUBY
+            require 'wwtd/tasks'
+            task :default => :wwtd
+          RUBY
+        end
+
+        it "does not go crazy" do
+          sh("bundle exec rake", :fail => true).should include "Already running WWTD"
+        end
+      end
     end
 
     def write(file, content)

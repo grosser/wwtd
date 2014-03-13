@@ -11,8 +11,10 @@ module WWTD
         puts "Ignoring: #{ignored.sort.join(", ")}" if ignored.any?
 
         # Execute tests
-        results = ::WWTD.run(matrix, parse_options(argv)) do |state, config|
-          puts info_line(state, config, matrix)
+        results = protect_against_nested_runs do
+          ::WWTD.run(matrix, parse_options(argv)) do |state, config|
+            puts info_line(state, config, matrix)
+          end
         end
 
         # Summary
@@ -25,6 +27,20 @@ module WWTD
       end
 
       private
+
+      def protect_against_nested_runs
+        env = (defined?(Bundler) ? Bundler::ORIGINAL_ENV : ENV)
+
+        r = rand
+        puts "START #{r} -- #{env["INSIDE_WWTD"].inspect}"
+        raise "Already running WWTD" if env["INSIDE_WWTD"]
+        env['INSIDE_WWTD'] = "1"
+        yield
+      ensure
+        puts "END #{r}"
+        env['INSIDE_WWTD'] = nil
+      end
+
 
       def parse_options(argv)
         options = {}
