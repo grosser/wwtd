@@ -51,6 +51,7 @@ Authors
 =======
 
 ### [Contributors](https://github.com/grosser/wwtd/contributors)
+ - [Joshua Kovach](https://github.com/shekibobo)
  - [Kris Leech](https://github.com/krisleech)
  - [Eirik Dentz Sinclair](https://github.com/edsinclair)
  - [Lukasz Krystkowiak](https://github.com/lukkry)
