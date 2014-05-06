@@ -43,6 +43,12 @@ describe WWTD do
       wwtd("").should include "111\n"
     end
 
+    it "runs with a script array" do
+      write "Rakefile", "task(:foo){ puts 111 }\ntask(:bar){ puts 222 }"
+      write ".travis.yml", "script:\n  - rake foo\n  - rake bar"
+      wwtd("").should include "111\n222\n"
+    end
+
     it "bundles if there is a Gemfile" do
       write_default_gemfile
       bundle
