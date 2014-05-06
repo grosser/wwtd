@@ -34,6 +34,7 @@ module WWTD
 
       default_command = (wants_bundle? ? "bundle exec rake" : "rake")
       command = config["script"] || default_command
+      command = command.join(" && ") if Array === command
       command = "#{switch}#{command}"
 
       sh(env, command)
