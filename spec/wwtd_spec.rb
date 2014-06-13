@@ -43,6 +43,32 @@ describe WWTD do
       wwtd("--ignore rvm").should include "111\n"
     end
 
+    it "honors excludes if they match" do
+      pending unless RUBY_VERSION =~ /\A\d+\.\d+\.\d+\Z/
+
+      write ".travis.yml", <<-YAML.gsub("        ", "")
+        script: ruby -e 'puts RUBY_VERSION + "--" + ENV["A"]'
+        rvm:
+         - #{RUBY_VERSION}
+         - 1.2.3
+        env:
+         - A=1
+         - A=2
+         - A=3
+        matrix:
+          exclude:
+            - rvm: #{RUBY_VERSION}
+              env: A=2
+            - rvm: 1.2.3
+              env: A=1
+      YAML
+      result = wwtd("--ignore rvm")
+      result.should include "#{RUBY_VERSION}--1"
+      result.should include "#{RUBY_VERSION}--3"
+      result.should_not include "#{RUBY_VERSION}--2"
+      result.should_not include "1.2.3"
+    end
+
     it "runs with script" do
       write "Rakefile", "task(:foo){ puts 111 }"
       write ".travis.yml", "script: rake foo"

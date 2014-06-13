@@ -19,8 +19,22 @@ module WWTD
       config = (File.exist?(CONFIG) ? YAML.load_file(CONFIG) : {})
       config.delete("source_key") # we don't need that we already have the source
       ignored = (config.keys - UNDERSTOOD) + Array(options[:ignore])
-      ignored.each { |k| config.delete(k) }
-      [matrix(config), ignored]
+
+      calculate_local_ruby_matrix = (
+        ignored.include?("rvm") &&
+        Array(config["rvm"]).include?(RUBY_VERSION) &&
+        config["matrix"]
+      )
+
+      ignored.each { |i| config.delete(i) unless i == "rvm" && calculate_local_ruby_matrix }
+      matrix = matrix(config)
+
+      if calculate_local_ruby_matrix
+        matrix.delete_if { |m| m["rvm"] != RUBY_VERSION }
+        matrix.each { |m| m.delete("rvm") }
+      end
+
+      [matrix, ignored]
     end
 
     def run(matrix, options, &block)
