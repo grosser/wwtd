@@ -28,7 +28,8 @@ FAILURE gemfile: gemfiles/rails32.gemfile, rvm: 1.9.3
 ### Rake
 ```
 require 'wwtd/tasks'
-task :default => :wwtd
+task :default => :wwtd      # run all gemfiles on all rubies
+task :local => "wwtd:local" # run all gemfiles with local ruby
 ```
 
 ### Tips

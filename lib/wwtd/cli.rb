@@ -6,13 +6,15 @@ module WWTD
 
     class << self
       def run(argv=[])
+        options = parse_options(argv)
+
         # Read travis.yml
-        matrix, ignored = ::WWTD.read_travis_yml
+        matrix, ignored = ::WWTD.read_travis_yml(options)
         puts "Ignoring: #{ignored.sort.join(", ")}" if ignored.any?
 
         # Execute tests
         results = protect_against_nested_runs do
-          ::WWTD.run(matrix, parse_options(argv)) do |state, config|
+          ::WWTD.run(matrix, options) do |state, config|
             puts info_line(state, config, matrix)
           end
         end
@@ -53,6 +55,7 @@ module WWTD
 
             Options:
           BANNER
+          opts.on("-i", "--ignore FIELDS", String, "Ignore selected travis fields like rvm/gemfile/matrix/...") { |fields| options[:ignore] = fields.split(",") }
           opts.on("-p", "--parallel [COUNT]", Integer, "Run in parallel") { |c| options[:parallel] = c || 4 }
           opts.on("-h", "--help", "Show this.") { puts opts; exit }
           opts.on("-v", "--version", "Show Version"){ puts WWTD::VERSION; exit}

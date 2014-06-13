@@ -37,6 +37,12 @@ describe WWTD do
       wwtd("").should include "111\n"
     end
 
+    it "can run with local ruby" do
+      write_default_rakefile
+      write ".travis.yml", "rvm: does-not-exist"
+      wwtd("--ignore rvm").should include "111\n"
+    end
+
     it "runs with script" do
       write "Rakefile", "task(:foo){ puts 111 }"
       write ".travis.yml", "script: rake foo"

@@ -12,13 +12,14 @@ module WWTD
   CONFIG = ".travis.yml"
   DEFAULT_GEMFILE = "Gemfile"
   COMBINATORS = ["rvm", "gemfile", "env"]
-  UNDERSTOOD = ["rvm", "gemfile", "matrix", "script", "bundler_args"]
+  UNDERSTOOD = COMBINATORS + ["matrix", "script", "bundler_args"]
 
   class << self
-    def read_travis_yml
+    def read_travis_yml(options={})
       config = (File.exist?(CONFIG) ? YAML.load_file(CONFIG) : {})
       config.delete("source_key") # we don't need that we already have the source
-      ignored = config.keys - UNDERSTOOD
+      ignored = (config.keys - UNDERSTOOD) + Array(options[:ignore])
+      ignored.each { |k| config.delete(k) }
       [matrix(config), ignored]
     end
 
