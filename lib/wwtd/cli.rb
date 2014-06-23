@@ -34,12 +34,10 @@ module WWTD
         env = (defined?(Bundler) ? Bundler::ORIGINAL_ENV : ENV)
 
         r = rand
-        puts "START #{r} -- #{env["INSIDE_WWTD"].inspect}"
         raise "Already running WWTD" if env["INSIDE_WWTD"]
         env['INSIDE_WWTD'] = "1"
         yield
       ensure
-        puts "END #{r}"
         env['INSIDE_WWTD'] = nil
       end
 
