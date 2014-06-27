@@ -43,7 +43,9 @@ module WWTD
 
 
       def parse_options(argv)
-        options = {}
+        options = {
+          :ignore => []
+        }
         OptionParser.new do |opts|
           opts.banner = <<-BANNER.gsub(/^ {10}/, "")
             WWTD: Travis simulator - faster + no more waiting for build emails
@@ -53,7 +55,8 @@ module WWTD
 
             Options:
           BANNER
-          opts.on("-i", "--ignore FIELDS", String, "Ignore selected travis fields like rvm/gemfile/matrix/...") { |fields| options[:ignore] = fields.split(",") }
+          opts.on("-l", "--local", "Ignore rvm options / only run on current ruby") { options[:ignore] << "rvm" }
+          opts.on("-i", "--ignore FIELDS", String, "Ignore selected travis fields like rvm/gemfile/matrix/...") { |fields| options[:ignore] += fields.split(",") }
           opts.on("-p", "--parallel [COUNT]", Integer, "Run in parallel") { |c| options[:parallel] = c || 4 }
           opts.on("-h", "--help", "Show this.") { puts opts; exit }
           opts.on("-v", "--version", "Show Version"){ puts WWTD::VERSION; exit}

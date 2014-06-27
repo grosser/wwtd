@@ -1,5 +1,5 @@
 WWTD: Travis simulator - faster + no more waiting for build emails.<br/>
-Reads your .travis.yml and runs what travis would run (via rvm or rbenv).
+Reads your .travis.yml and runs what travis would run (via rvm/rbenv/chruby).
 
 ![Results](http://dl.dropbox.com/u/2670385/Web/wwtd-results.png)
 
@@ -23,6 +23,12 @@ START gemfile: gemfiles/rails32.gemfile, rvm: 1.9.3
 Results:
 SUCCESS gemfile: gemfiles/rails32.gemfile, rvm: 2.0
 FAILURE gemfile: gemfiles/rails32.gemfile, rvm: 1.9.3
+```
+
+### Options
+```Bash
+wwtd --local        # Run all gemfiles on current ruby -> get rid of Appraisal
+wwtd --ignore env   # Ignore env settings
 ```
 
 ### Rake
