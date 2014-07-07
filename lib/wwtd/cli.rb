@@ -22,7 +22,14 @@ module WWTD
         # Summary
         if results.size > 1
           puts "\nResults:"
-          puts results.map { |state, config| info_line(state, config, matrix) }
+          results.each do |state, config|
+            puts info_line(state, config, matrix)
+            if state == :failure
+              runner = WWTD::Run.new(config, {}, nil)
+              env, cmd = runner.env_and_command
+              puts "\trerun with: " + WWTD.escaped_env(env) + " " + cmd
+            end
+          end
         end
 
         results.all? { |state, config| state == :success } ? 0 : 1
@@ -67,6 +74,7 @@ module WWTD
       def info_line(state, config, matrix)
         config_info = config_info(matrix, config)
         color = STATE_COLOR_MAP[state] || :red
+
         "#{colorize(color, state.to_s.upcase)} #{config_info}"
       end
 

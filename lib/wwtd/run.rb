@@ -19,9 +19,19 @@ module WWTD
       [state, config]
     end
 
+    def env_and_command
+      default_command = (wants_bundle? ? "bundle exec rake" : "rake")
+      command = config["script"] || default_command
+      command = command.join(" && ") if Array === command
+      command = "#{switch}#{command}"
+
+      [env, command]
+    end
+
     private
 
     attr_reader :config, :env, :lock, :switch
+
 
     def success?
       if wants_bundle?
@@ -32,12 +42,7 @@ module WWTD
         end
       end
 
-      default_command = (wants_bundle? ? "bundle exec rake" : "rake")
-      command = config["script"] || default_command
-      command = command.join(" && ") if Array === command
-      command = "#{switch}#{command}"
-
-      sh(env, command)
+      sh(*env_and_command)
     end
 
     def wants_bundle?
