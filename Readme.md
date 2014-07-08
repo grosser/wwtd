@@ -63,6 +63,7 @@ Authors
  - [Eirik Dentz Sinclair](https://github.com/edsinclair)
  - [Lukasz Krystkowiak](https://github.com/lukkry)
  - [Jeff Dean](https://github.com/zilkey)
+ - [Ben Osheroff](https://github.com/osheroff)
 
 [Michael Grosser](http://grosser.it)<br/>
 michael@grosser.it<br/>
