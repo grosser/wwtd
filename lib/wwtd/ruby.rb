@@ -8,12 +8,20 @@ module WWTD
       # - rvm: "rvm xxx do"
       # - others: env hash
       # - unknown: nil
-      def switch_statement(version)
+      def switch_statement(version, options={})
         return unless version
         version = normalize_ruby_version(version)
         if rvm_executable
           command = "rvm #{version} do "
           command if cache_command("#{command} ruby -v")
+        elsif options[:rerun]
+          if rbenv_executable
+            # cannot call different ruby from inside ruby, but ok for copy-paste
+            "RBENV_VERSION=#{version} "
+          else
+            # don't print giant path hack :/
+            "USE-RUBY-#{version}"
+          end
         else
           if ruby_root = ENV["RUBY_ROOT"] # chruby or RUBY_ROOT set
             switch_via_env(File.dirname(ruby_root), version)

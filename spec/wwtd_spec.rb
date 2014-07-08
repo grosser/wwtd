@@ -43,6 +43,26 @@ describe WWTD do
       wwtd("--ignore rvm").should include "111\n"
     end
 
+    context "rerun" do
+      before { write_default_rakefile }
+
+      it "does not print re-run instructions on success" do
+        write ".travis.yml", "script: test 1\nenv: XXX=1"
+        wwtd("").should_not include "Failed"
+      end
+
+      it "prints re-run instructions on failure" do
+        write ".travis.yml", "script: test\nenv: XXX=1"
+        wwtd("", :fail => true).should include "Failed:\nXXX=1 test"
+      end
+
+      it "prints nice ruby rerun instructions" do
+        skip unless `which rbenv`
+        write ".travis.yml", "script: test\nenv: XXX=1\nrvm: 2.1.1"
+        wwtd("", :fail => true).should include "Failed:\nXXX=1 RBENV_VERSION=2.1.1 test"
+      end
+    end
+
     context "ignore" do
       ["--ignore rvm", "--local"].each do |option|
         it "honors excludes if they match via #{option}" do

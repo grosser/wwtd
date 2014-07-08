@@ -54,7 +54,7 @@ module WWTD
     end
 
     def build_switch_statement
-      switch_ruby = Ruby.switch_statement(config["rvm"])
+      switch_ruby = Ruby.switch_statement(config["rvm"], :rerun => config[:rerun])
       if switch_ruby.is_a?(Hash)
         env.merge!(switch_ruby)
         switch_ruby = nil

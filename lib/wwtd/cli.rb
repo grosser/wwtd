@@ -19,28 +19,37 @@ module WWTD
           end
         end
 
-        # Summary
-        if results.size > 1
-          puts "\nResults:"
-          results.each do |state, config|
-            puts info_line(state, config, matrix)
-            if state == :failure
-              runner = WWTD::Run.new(config, {}, nil)
-              env, cmd = runner.env_and_command
-              puts "\trerun with: " + WWTD.escaped_env(env) + " " + cmd
-            end
-          end
-        end
+        print_summary(matrix, results)
+        print_rerun(results)
 
         results.all? { |state, config| state == :success } ? 0 : 1
       end
 
       private
 
+      def print_rerun(results)
+        failed = results.select { |s, c| s == :failure }
+        if failed.any?
+          puts "\nFailed:"
+          failed.each do |state, config|
+            runner = WWTD::Run.new(config.merge(:rerun => true), {}, nil)
+            env, cmd = runner.env_and_command
+            env = (env.empty? ? "" : WWTD.escaped_env(env) + " ")
+            puts colorize(:red, env + cmd)
+          end
+        end
+      end
+
+      def print_summary(matrix, results)
+        if results.size > 1
+          puts "\nResults:"
+          results.each { |state, config| puts info_line(state, config, matrix) }
+        end
+      end
+
       def protect_against_nested_runs
         env = (defined?(Bundler) ? Bundler::ORIGINAL_ENV : ENV)
 
-        r = rand
         raise "Already running WWTD" if env["INSIDE_WWTD"]
         env['INSIDE_WWTD'] = "1"
         yield
