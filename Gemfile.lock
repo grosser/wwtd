@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    wwtd (0.5.4)
+    wwtd (0.5.5)
 
 GEM
   remote: https://rubygems.org/
