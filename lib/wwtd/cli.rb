@@ -34,7 +34,7 @@ module WWTD
           failed.each do |state, config|
             runner = WWTD::Run.new(config.merge(:rerun => true), {}, nil)
             env, cmd = runner.env_and_command
-            env = (env.empty? ? "" : WWTD.escaped_env(env) + " ")
+            env = WWTD.escaped_env(env, :rerun => true)
             puts colorize(:red, env + cmd)
           end
         end

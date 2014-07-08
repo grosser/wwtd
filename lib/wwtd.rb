@@ -53,23 +53,28 @@ module WWTD
     end
 
     # internal api
-    def escaped_env(env)
-      env.map {|k,v| "#{k}=#{Shellwords.escape(v)}" }.join(" ")
+    # needs the export to work on ruby 1.9 / linux
+    def escaped_env(env, options={})
+      return "" if env.empty?
+      env = env.map {|k,v| "#{k}=#{Shellwords.escape(v)}" }
+      if options[:rerun]
+        env.join(" ") + " "
+      elsif env.empty?
+        ""
+      else
+        env.map { |e| "export #{e}" }.join(" && ") + " && "
+      end
     end
+
+    private
 
     # internal api
     def sh(env, cmd=nil)
       cmd, env = env, {} unless cmd
-      env = if env.any?
-        escaped_env(env) + " "
-      else
-        ""
-      end
+      env = escaped_env(env)
       puts cmd
       system("#{env}#{cmd}")
     end
-
-    private
 
     def with_clean_dot_bundle
       had_old = File.exist?(".bundle")
