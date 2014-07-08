@@ -19,6 +19,7 @@ module WWTD
       [state, config]
     end
 
+    # internal api
     def env_and_command
       default_command = (wants_bundle? ? "bundle exec rake" : "rake")
       command = config["script"] || default_command

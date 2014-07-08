@@ -52,10 +52,12 @@ module WWTD
       end
     end
 
+    # internal api
     def escaped_env(env)
       env.map {|k,v| "#{k}=#{Shellwords.escape(v)}" }.join(" ")
     end
 
+    # internal api
     def sh(env, cmd=nil)
       cmd, env = env, {} unless cmd
       env = if env.any?
@@ -66,7 +68,6 @@ module WWTD
       puts cmd
       system("#{env}#{cmd}")
     end
-
 
     private
 
