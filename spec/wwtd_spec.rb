@@ -57,7 +57,7 @@ describe WWTD do
       end
 
       it "prints nice ruby rerun instructions" do
-        skip unless `which rbenv`
+        skip if `which rvm`
         write ".travis.yml", "script: test\nenv: XXX=1\nrvm: #{RUBY_VERSION}"
         wwtd("", :fail => true).should include "Failed:\nXXX=1 RBENV_VERSION=#{RUBY_VERSION} test"
       end
