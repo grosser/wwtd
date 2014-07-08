@@ -52,6 +52,22 @@ module WWTD
       end
     end
 
+    def escaped_env(env)
+      env.map {|k,v| "#{k}=#{Shellwords.escape(v)}" }.join(" ")
+    end
+
+    def sh(env, cmd=nil)
+      cmd, env = env, {} unless cmd
+      env = if env.any?
+        escaped_env(env) + " "
+      else
+        ""
+      end
+      puts cmd
+      system("#{env}#{cmd}")
+    end
+
+
     private
 
     def with_clean_dot_bundle
@@ -87,17 +103,6 @@ module WWTD
         end
       end
       matrix.map! { |c| config.merge(c) }
-    end
-
-    def sh(env, cmd=nil)
-      cmd, env = env, {} unless cmd
-      env = if env.any?
-        env.map {|k,v| "export #{k}=#{Shellwords.escape(v)}" }.join(" && ") + " && "
-      else
-        ""
-      end
-      puts cmd
-      system("#{env}#{cmd}")
     end
 
     def with_clean_env(&block)
