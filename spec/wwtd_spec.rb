@@ -272,13 +272,14 @@ describe WWTD do
       context "bundling" do
         before do
           write_default_gemfile
-          write "Gemfile", File.read("Gemfile") + "\nFile.open('log','a'){|f|f.puts 'BUNDLE-START'; f.flush; sleep 3; f.puts 'BUNDLE-END'} if ARGV[0] == 'install'"
+          # $ran = prevent bundler but that eval gemfile twice when a lockfile exists
+          write "Gemfile", File.read("Gemfile") + "\nFile.open('log','a'){|f|f.puts 'BUNDLE-START'; f.flush; sleep 3; f.puts 'BUNDLE-END'} if !$ran && ARGV[0] == 'install'; $ran=1"
           write_default_rakefile
         end
 
         it "does not bundle 2 gemfiles at once" do
           wwtd "--parallel"
-          File.read("log").scan(/BUNDLE-.*/).should == ["BUNDLE-START", "BUNDLE-END"] * 3 # should be 2 but somehow gets called twice in the second bundeling...
+          File.read("log").scan(/BUNDLE-.*/).should == ["BUNDLE-START", "BUNDLE-END"] * 2
         end
 
         it "bundles 2 gemfiles from different rvms at once" do
