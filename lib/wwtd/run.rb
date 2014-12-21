@@ -39,6 +39,7 @@ module WWTD
         flock File.join(lock, (config["rvm"] || "rvm").to_s) do
           default_bundler_args = "--deployment --path #{Dir.pwd}/vendor/bundle" if committed?("#{gemfile || DEFAULT_GEMFILE}.lock")
           bundle_command = "#{switch}bundle install #{config["bundler_args"] || default_bundler_args}"
+          env = env().merge("BUNDLE_IGNORE_CONFIG" => "1")
           return false unless sh(env, "#{bundle_command.strip} --quiet")
         end
       end

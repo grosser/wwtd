@@ -6,8 +6,8 @@ describe WWTD do
   end
 
   describe "CLI" do
-    def bundle
-      Bundler.with_clean_env { sh "bundle" }
+    def bundle(extra="")
+      Bundler.with_clean_env { sh "bundle #{extra}" }
     end
 
     def write_default_gemfile(rake_version="0.9.2.2")
@@ -220,15 +220,7 @@ describe WWTD do
     end
 
     describe ".bundle" do
-      it "does not leave a .bundle behind" do
-        write_default_rakefile
-        write_default_gemfile
-        bundle
-        wwtd("")
-        File.exist?(".bundle").should == false
-      end
-
-      it "restores old .bundle" do
+      it "leaves .bundle alone" do
         sh "mkdir .bundle"
         write ".bundle/foo", "xxx"
 
@@ -240,6 +232,23 @@ describe WWTD do
 
         File.exist?(".bundle").should == true
         sh("ls .bundle").should == "foo\n"
+      end
+
+      it "ignores .bundle settings" do
+        write_default_rakefile
+        write_default_gemfile
+
+        # write binstubs to config
+        File.exist?(".bundle").should == false
+        File.exist?("bin").should == false
+        bundle("--binstubs")
+        File.exist?(".bundle").should == true
+        File.exist?("bin").should == true
+
+        # binstubs option not used
+        sh("rm -rf bin")
+        wwtd("")
+        File.exist?("bin").should == false
       end
     end
 
