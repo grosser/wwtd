@@ -38,13 +38,15 @@ module WWTD
     end
 
     def run(matrix, options, &block)
-      with_clean_env do
-        Dir.mktmpdir do |lock|
-          in_multiple_threads(matrix.each_with_index, options[:parallel]) do |config, i|
-            # set env as parallel_tests does to reuse existing infrastructure
-            env = {}
-            env["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
-            Run.new(config, env, lock).execute(&block)
+      with_clean_dot_bundle do
+        with_clean_env do
+          Dir.mktmpdir do |lock|
+            in_multiple_threads(matrix.each_with_index, options[:parallel]) do |config, i|
+              # set env as parallel_tests does to reuse existing infrastructure
+              env = {}
+              env["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
+              Run.new(config, env, lock).execute(&block)
+            end
           end
         end
       end
@@ -72,6 +74,19 @@ module WWTD
       env = escaped_env(env)
       puts cmd
       system("#{env}#{cmd}")
+    end
+
+    def with_clean_dot_bundle
+      had_old = File.exist?(".bundle")
+      Dir.mktmpdir do |dir|
+        begin
+          sh "mv .bundle #{dir}" if had_old
+          yield
+        ensure
+          sh "rm -rf .bundle"
+          sh "mv #{dir}/.bundle ." if had_old
+        end
+      end
     end
 
     def matrix(config)

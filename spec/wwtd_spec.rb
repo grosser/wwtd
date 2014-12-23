@@ -220,6 +220,14 @@ describe WWTD do
     end
 
     describe ".bundle" do
+      it "does not leave a .bundle behind" do
+        write_default_rakefile
+        write_default_gemfile
+        bundle
+        wwtd("")
+        File.exist?(".bundle").should == false
+      end
+
       it "leaves .bundle alone" do
         sh "mkdir .bundle"
         write ".bundle/foo", "xxx"
@@ -249,6 +257,18 @@ describe WWTD do
         sh("rm -rf bin")
         wwtd("")
         File.exist?("bin").should == false
+      end
+
+      it "uses .bundle from home" do
+        begin
+          number = rand(9999999)
+          sh("bundle config TESTING_WWTD #{number} --global")
+          write "Rakefile", "task(:default){ puts %{GOT \#{Bundler.settings['TESTING_WWTD']}} }"
+          write_default_gemfile
+          wwtd("").should include "GOT #{number}"
+        ensure
+          sh("bundle config TESTING_WWTD #{number} --delete")
+        end
       end
     end
 
@@ -379,7 +399,8 @@ describe WWTD do
     end
 
     def write(file, content)
-      File.open(file, "w") { |f| f.write content }
+      FileUtils.mkdir_p(File.dirname(file))
+      File.write(file, content)
     end
 
     def wwtd(command, options={})
