@@ -267,7 +267,7 @@ describe WWTD do
           write_default_gemfile
           wwtd("").should include "GOT #{number}"
         ensure
-          sh("bundle config TESTING_WWTD #{number} --delete")
+          sh("bundle config --delete TESTING_WWTD")
         end
       end
     end
