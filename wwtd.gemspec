@@ -1,6 +1,5 @@
-$LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
 name = "wwtd"
-require "#{name.gsub("-","/")}/version"
+require "./lib/#{name}/version"
 
 Gem::Specification.new name, WWTD::VERSION do |s|
   s.summary = "Travis simulator so you do not need to wait for the build"
@@ -10,9 +9,4 @@ Gem::Specification.new name, WWTD::VERSION do |s|
   s.files = `git ls-files lib/ bin/`.split("\n")
   s.license = "MIT"
   s.executables = ["wwtd"]
-  cert = File.expand_path("~/.ssh/gem-private-key-grosser.pem")
-  if File.exist?(cert)
-    s.signing_key = cert
-    s.cert_chain = ["gem-public_cert.pem"]
-  end
 end
