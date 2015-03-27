@@ -68,7 +68,7 @@ module WWTD
         name, value = part.split("=", 2)
         env[name] = value
       end
-      env["BUNDLE_GEMFILE"] = gemfile if gemfile
+      env["BUNDLE_GEMFILE"] = File.expand_path(gemfile) if gemfile
     end
 
     def committed?(file)

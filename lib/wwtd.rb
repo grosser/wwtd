@@ -56,11 +56,14 @@ module WWTD
     # needs the export to work on ruby 1.9 / linux
     def escaped_env(env, options={})
       return "" if env.empty?
-      env = env.map {|k,v| "#{k}=#{Shellwords.escape(v)}" }
+
+      if options[:rerun] && gemfile = env["BUNDLE_GEMFILE"]
+        env["BUNDLE_GEMFILE"] = gemfile.sub("#{Dir.pwd}/", "")
+      end
+
+      env = env.map { |k,v| "#{k}=#{Shellwords.escape(v)}" }
       if options[:rerun]
         env.join(" ") + " "
-      elsif env.empty?
-        ""
       else
         env.map { |e| "export #{e}" }.join(" && ") + " && "
       end
