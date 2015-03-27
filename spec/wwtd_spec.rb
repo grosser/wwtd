@@ -122,7 +122,7 @@ describe WWTD do
       result = wwtd("")
       result.should include "bundle install --quiet"
       result.should include "\nRAKE: 0.9.2.2\n"
-      File.exist?("vendor/bundle").should == false
+      File.exist?("vendor/bundle").should == SHARED_GEMS_DISABLED
     end
 
     it "bundles with --deployment if lockfile is committed" do
@@ -225,7 +225,7 @@ describe WWTD do
         write_default_gemfile
         bundle
         wwtd("")
-        File.exist?(".bundle").should == false
+        File.exist?(".bundle").should == SHARED_GEMS_DISABLED
       end
 
       it "leaves .bundle alone" do
@@ -239,7 +239,7 @@ describe WWTD do
         wwtd("")
 
         File.exist?(".bundle").should == true
-        sh("ls .bundle").should == "foo\n"
+        sh("ls .bundle").should == (SHARED_GEMS_DISABLED ? "config\nfoo\n" : "foo\n")
       end
 
       it "ignores .bundle settings" do
