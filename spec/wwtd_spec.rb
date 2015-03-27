@@ -122,7 +122,7 @@ describe WWTD do
       result = wwtd("")
       result.should include "bundle install --quiet"
       result.should include "\nRAKE: 0.9.2.2\n"
-      File.exist?("vendor/bundle").should == false
+      File.exist?("vendor/bundle").should == SHARED_GEMS_DISABLED
     end
 
     it "bundles with --deployment if lockfile is committed" do
@@ -178,7 +178,7 @@ describe WWTD do
       write ".travis.yml", "gemfile: xxx/Gemfile2"
       result = wwtd("")
       result.should include "bundle install --deployment"
-      result.should include "\nRAKE: 0.9.2.2 -- xxx/Gemfile2\n"
+      result.sub(/ \/\S+\/xxx/, ' full-path/xxx').should include "\nRAKE: 0.9.2.2 -- full-path/xxx/Gemfile2\n"
       File.exist?("vendor/bundle").should == true
       File.exist?("gemfiles/vendor/bundle").should == false
     end
@@ -225,7 +225,7 @@ describe WWTD do
         write_default_gemfile
         bundle
         wwtd("")
-        File.exist?(".bundle").should == false
+        File.exist?(".bundle").should == SHARED_GEMS_DISABLED
       end
 
       it "leaves .bundle alone" do
@@ -239,7 +239,7 @@ describe WWTD do
         wwtd("")
 
         File.exist?(".bundle").should == true
-        sh("ls .bundle").should == "foo\n"
+        sh("ls .bundle").should == (SHARED_GEMS_DISABLED ? "config\nfoo\n" : "foo\n")
       end
 
       it "ignores .bundle settings" do
@@ -338,11 +338,12 @@ describe WWTD do
 
       it "can run multiple" do
         result = wwtd("")
+        result.gsub!(/\/\S+\/Gem/, "full-path/Gem")
         result.scan(/RAKE:.*/).sort.should == [
-          "RAKE: 0.9.2.2 -- Gemfile1 -- 1.9.3",
-          "RAKE: 0.9.2.2 -- Gemfile1 -- 2.0.0",
-          "RAKE: 0.9.6 -- Gemfile2 -- 1.9.3",
-          "RAKE: 0.9.6 -- Gemfile2 -- 2.0.0",
+          "RAKE: 0.9.2.2 -- full-path/Gemfile1 -- 1.9.3",
+          "RAKE: 0.9.2.2 -- full-path/Gemfile1 -- 2.0.0",
+          "RAKE: 0.9.6 -- full-path/Gemfile2 -- 1.9.3",
+          "RAKE: 0.9.6 -- full-path/Gemfile2 -- 2.0.0",
         ]
       end
 
@@ -356,9 +357,10 @@ describe WWTD do
                 gemfile: Gemfile1
         YAML
         result = wwtd("")
+        result.gsub!(/\/\S+\/Gem/, "full-path/Gem")
         result.scan(/RAKE:.*/).sort.should == [
-          "RAKE: 0.9.2.2 -- Gemfile1 -- 1.9.3",
-          "RAKE: 0.9.6 -- Gemfile2 -- 2.0.0",
+          "RAKE: 0.9.2.2 -- full-path/Gemfile1 -- 1.9.3",
+          "RAKE: 0.9.6 -- full-path/Gemfile2 -- 2.0.0",
         ]
       end
     end
