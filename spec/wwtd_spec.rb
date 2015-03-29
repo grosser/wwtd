@@ -6,6 +6,8 @@ describe WWTD do
   end
 
   describe "CLI" do
+    let(:available_ruby_versions) { [RUBY_VERSION, RUBY_VERSION == "2.1.5" ? "2.0.0" : "2.1.5"].sort }
+
     def bundle(extra="")
       Bundler.with_clean_env { sh "bundle #{extra}" }
     end
@@ -152,7 +154,7 @@ describe WWTD do
     end
 
     it "runs with given rvm version" do
-      other = (RUBY_VERSION == "1.9.3" ? "2.0.0" : "1.9.3")
+      other = (available_ruby_versions - [RUBY_VERSION]).first
       write ".travis.yml", "rvm: #{other}"
       write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_VERSION}} }"
       wwtd("").should include "RUBY: #{other}"
@@ -313,7 +315,7 @@ describe WWTD do
         end
 
         it "bundles 2 gemfiles from different rvms at once" do
-          write ".travis.yml", "rvm:\n - 1.9.3\n - 2.0.0"
+          write ".travis.yml", {"rvm" => available_ruby_versions}.to_yaml
           wwtd "--parallel"
           File.read("log").scan(/BUNDLE-.*/).should == ["BUNDLE-START", "BUNDLE-START", "BUNDLE-END", "BUNDLE-END"]
         end
@@ -323,9 +325,7 @@ describe WWTD do
     describe "with multiple" do
       before do
         write ".travis.yml", <<-YML.gsub("          ", "")
-          rvm:
-            - 2.0.0
-            - 1.9.3
+          #{{"rvm" => available_ruby_versions}.to_yaml}
           gemfile:
             - Gemfile1
             - Gemfile2
@@ -341,10 +341,10 @@ describe WWTD do
         result = wwtd("")
         result.gsub!(/\/\S+\/Gem/, "full-path/Gem")
         result.scan(/RAKE:.*/).sort.should == [
-          "RAKE: 0.9.2.2 -- full-path/Gemfile1 -- 1.9.3",
-          "RAKE: 0.9.2.2 -- full-path/Gemfile1 -- 2.0.0",
-          "RAKE: 0.9.6 -- full-path/Gemfile2 -- 1.9.3",
-          "RAKE: 0.9.6 -- full-path/Gemfile2 -- 2.0.0",
+          "RAKE: 0.9.2.2 -- full-path/Gemfile1 -- #{available_ruby_versions[0]}",
+          "RAKE: 0.9.2.2 -- full-path/Gemfile1 -- #{available_ruby_versions[1]}",
+          "RAKE: 0.9.6 -- full-path/Gemfile2 -- #{available_ruby_versions[0]}",
+          "RAKE: 0.9.6 -- full-path/Gemfile2 -- #{available_ruby_versions[1]}",
         ]
       end
 
@@ -352,16 +352,16 @@ describe WWTD do
         write(".travis.yml", File.read(".travis.yml") + <<-YAML.gsub("          ", ""))
           matrix:
             exclude:
-              - rvm: 1.9.3
+              - rvm: #{available_ruby_versions[0]}
                 gemfile: Gemfile2
-              - rvm: 2.0.0
+              - rvm: #{available_ruby_versions[1]}
                 gemfile: Gemfile1
         YAML
         result = wwtd("")
         result.gsub!(/\/\S+\/Gem/, "full-path/Gem")
         result.scan(/RAKE:.*/).sort.should == [
-          "RAKE: 0.9.2.2 -- full-path/Gemfile1 -- 1.9.3",
-          "RAKE: 0.9.6 -- full-path/Gemfile2 -- 2.0.0",
+          "RAKE: 0.9.2.2 -- full-path/Gemfile1 -- #{available_ruby_versions[0]}",
+          "RAKE: 0.9.6 -- full-path/Gemfile2 -- #{available_ruby_versions[1]}",
         ]
       end
     end
