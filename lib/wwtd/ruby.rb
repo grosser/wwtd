@@ -6,6 +6,7 @@ module WWTD
       end
 
       # - rvm: "rvm xxx do"
+      # - chruby: "chruby-exec xxx --"
       # - others: env hash
       # - unknown: nil
       def switch_statement(version, options={})
@@ -13,6 +14,9 @@ module WWTD
         version = normalize_ruby_version(version)
         if rvm_executable
           command = "rvm #{version} do "
+          command if cache_command("#{command} ruby -v")
+        elsif chruby_executable
+          command = "chruby-exec #{version} -- "
           command if cache_command("#{command} ruby -v")
         elsif options[:rerun]
           if rbenv_executable
@@ -52,6 +56,10 @@ module WWTD
 
       def rbenv_executable
         cache_command("which rbenv")
+      end
+
+      def chruby_executable
+        cache_command("which chruby-exec")
       end
 
       def cache_command(command)
