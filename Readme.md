@@ -64,6 +64,7 @@ Authors
  - [Lukasz Krystkowiak](https://github.com/lukkry)
  - [Jeff Dean](https://github.com/zilkey)
  - [Ben Osheroff](https://github.com/osheroff)
+ - [David Rodríguez](https://github.com/deivid-rodriguez)
 
 [Michael Grosser](http://grosser.it)<br/>
 michael@grosser.it<br/>
