@@ -23,8 +23,8 @@ module WWTD
     def env_and_command
       default_command = (wants_bundle? ? "bundle exec rake" : "rake")
       command = config["script"] || default_command
-      command = command.join(" && ") if Array === command
-      command = "#{switch}#{command}"
+      command = [command] unless Array === command
+      command = command.map { |cmd| "#{switch}#{cmd}" }.join(" && ")
 
       [env, command]
     end

@@ -116,6 +116,28 @@ describe WWTD do
         result.should include "222\n"
         result.should_not include "111\n"
       end
+
+      it "properly switches versions for every command in the array" do
+        write "Rakefile", <<-EOF
+          task(:foo){ puts "Foo in \#{RUBY_VERSION}" }
+          task(:bar){ puts "Bar in \#{RUBY_VERSION}" }
+        EOF
+
+        write ".travis.yml", <<-EOF
+          script:
+            - rake foo
+            - rake bar
+          rvm:
+            - #{available_ruby_versions[0]}
+            - #{available_ruby_versions[1]}
+        EOF
+
+        result = wwtd("")
+        result.should include("Foo in #{available_ruby_versions[1]}\n")
+        result.should include("Foo in #{available_ruby_versions[0]}\n")
+        result.should include("Bar in #{available_ruby_versions[1]}\n")
+        result.should include("Bar in #{available_ruby_versions[0]}\n")
+      end
     end
 
     it "bundles if there is a Gemfile" do
