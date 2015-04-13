@@ -71,7 +71,7 @@ describe WWTD do
         it "honors excludes if they match via #{option}" do
           pending unless RUBY_VERSION =~ /\A\d+\.\d+\.\d+\Z/
 
-          write ".travis.yml", <<-YAML.gsub("            ", "")
+          write ".travis.yml", unindent(<<-YAML)
             script: ruby -e 'puts RUBY_VERSION + "--" + ENV["A"]'
             rvm:
              - #{RUBY_VERSION}
@@ -118,19 +118,19 @@ describe WWTD do
       end
 
       it "properly switches versions for every command in the array" do
-        write "Rakefile", <<-EOF
+        write "Rakefile", <<-RUBY
           task(:foo){ puts "Foo in \#{RUBY_VERSION}" }
           task(:bar){ puts "Bar in \#{RUBY_VERSION}" }
-        EOF
+        RUBY
 
-        write ".travis.yml", <<-EOF
+        write ".travis.yml", unindent(<<-YAML)
           script:
             - rake foo
             - rake bar
           rvm:
             - #{available_ruby_versions[0]}
             - #{available_ruby_versions[1]}
-        EOF
+        YAML
 
         result = wwtd("")
         result.should include("Foo in #{available_ruby_versions[1]}\n")
@@ -346,12 +346,12 @@ describe WWTD do
 
     describe "with multiple" do
       before do
-        write ".travis.yml", <<-YML.gsub("          ", "")
+        write ".travis.yml", unindent(<<-YAML)
           #{{"rvm" => available_ruby_versions}.to_yaml}
           gemfile:
             - Gemfile1
             - Gemfile2
-        YML
+        YAML
         write_default_gemfile
         sh "mv Gemfile Gemfile1"
         write_default_gemfile "0.9.6"
@@ -371,7 +371,7 @@ describe WWTD do
       end
 
       it "can exclude" do
-        write(".travis.yml", File.read(".travis.yml") + <<-YAML.gsub("          ", ""))
+        write(".travis.yml", File.read(".travis.yml") + unindent(<<-YAML))
           matrix:
             exclude:
               - rvm: #{available_ruby_versions[0]}
@@ -421,6 +421,10 @@ describe WWTD do
           sh("bundle exec rake", :fail => true).should include "Already running WWTD"
         end
       end
+    end
+
+    def unindent(string)
+      string.gsub(/^#{string[/^ */]}/, "")
     end
 
     def write(file, content)
