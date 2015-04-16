@@ -303,7 +303,7 @@ describe WWTD do
       end
 
       it "runs in parallel" do
-        sleep = 3
+        sleep = (ENV["CI"] ? 5 : 3)
         write "Rakefile", "task(:default) { sleep #{sleep} }"
         result = ""
         Benchmark.realtime { result = wwtd("--parallel") }.should < sleep * 2
