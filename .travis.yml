@@ -1,11 +1,10 @@
 bundler_args: ""
 
-install:
+before_install:
   - rvm install 2.0.0
   - rvm install 2.1.5
   - rvm install 2.2.1
   - rvm install jruby
-  - bundle install
 
 rvm:
   - 2.0.0
