@@ -189,6 +189,7 @@ describe WWTD do
     end
 
     it "runs with given jruby version" do
+      skip if ENV["CI"]
       write ".travis.yml", "rvm: jruby-1.7.19"
       write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_ENGINE}-\#{JRUBY_VERSION}} }"
       wwtd("").should include "RUBY: jruby-1.7.19"
@@ -303,7 +304,7 @@ describe WWTD do
       end
 
       it "runs in parallel" do
-        sleep = (ENV["CI"] ? 5 : 3)
+        sleep = (ENV["CI"] ? 7 : 3)
         write "Rakefile", "task(:default) { sleep #{sleep} }"
         result = ""
         Benchmark.realtime { result = wwtd("--parallel") }.should < sleep * 2
