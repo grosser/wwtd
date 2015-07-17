@@ -59,7 +59,7 @@ module WWTD
       end
 
       def chruby_executable
-        cache_command("which chruby-exec")
+        !ENV["PATH"].include?("/rbenv/") && cache_command("which chruby-exec")
       end
 
       def cache_command(command)
