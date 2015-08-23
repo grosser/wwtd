@@ -484,6 +484,20 @@ describe WWTD do
       ]
     end
 
+    it "builds from include" do
+      call(
+        "matrix" => {
+          "include" => [
+            {"gemfile" => "Gemfile1", "rvm" => "aa"},
+            {"gemfile" => "Gemfile2", "rvm" => "bb"},
+          ],
+        }
+      ).should == [
+        {"rvm"=>"aa", "gemfile"=>"Gemfile1"},
+        {"rvm"=>"bb", "gemfile"=>"Gemfile2"},
+      ]
+    end
+
     it "excludes and includes" do
       call(
         "gemfile" => ["Gemfile1", "Gemfile2"],
