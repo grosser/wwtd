@@ -108,7 +108,11 @@ module WWTD
           matrix -= exclude
         end
         if include = matrix_config["include"]
-          matrix += include
+          if matrix == [{}]
+            matrix = include
+          else
+            matrix += include
+          end
         end
       end
       matrix.map! { |c| config.merge(c) }
