@@ -16,4 +16,9 @@ namespace :wwtd do
   task :local do
     run_wwtd.call(["--ignore", "rvm"])
   end
+
+  desc "bundle for all combinations"
+  task :bundle do
+    run_wwtd.call(["--only-bundle"])
+  end
 end

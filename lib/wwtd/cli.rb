@@ -74,6 +74,7 @@ module WWTD
           opts.on("-l", "--local", "Ignore rvm options / only run on current ruby") { options[:ignore] << "rvm" }
           opts.on("-i", "--ignore FIELDS", String, "Ignore selected travis fields like rvm/gemfile/matrix/...") { |fields| options[:ignore] += fields.split(",") }
           opts.on("-p", "--parallel [COUNT]", Integer, "Run in parallel") { |c| options[:parallel] = c || 4 }
+          opts.on("-o", "--only-bundle", "Only bundle, do not run anything") { options[:only_bundle] = true }
           opts.on("-h", "--help", "Show this.") { puts opts; exit }
           opts.on("-v", "--version", "Show Version"){ puts WWTD::VERSION; exit}
         end.parse!(argv)

@@ -168,6 +168,12 @@ describe WWTD do
       wwtd("").should include "bundle install --no-color"
     end
 
+    it "only bundles when --only-bundle is given" do
+      write_default_gemfile
+      write_default_rakefile
+      wwtd("--only-bundle").should == "START \nbundle install --quiet\n# only bundle\nSUCCESS \nrm -rf .bundle\n"
+    end
+
     it "casts ruby version to string when creating a path to a lock file" do
       write_default_gemfile
       write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_VERSION}} }"
@@ -408,6 +414,10 @@ describe WWTD do
 
       it "runs in parallel" do
         sh("bundle exec rake wwtd:parallel").should include "YES-IT-WORKS"
+      end
+
+      it "runs only-bundle" do
+        sh("bundle exec rake wwtd:bundle").should == "START \nbundle install --quiet\n# only bundle\nSUCCESS \nrm -rf .bundle\n"
       end
 
       context "when running itself" do

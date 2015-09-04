@@ -41,6 +41,7 @@ task :local => "wwtd:local" # run all gemfiles with local ruby
 ### Tips
  - vendor/bundle is created if you have a committed lock file, add it to `.gitignore` or better yet to your global `.gitignore`.
  - if you do not want `--deployment` but want a lockfile add `bundler_args: ""` to your .travis.yml
+ - to only bundle (refresh lock files / try bundling) use `--only-bundle` or `rake wwtd:bundle`
 
 ### Parallel
 
