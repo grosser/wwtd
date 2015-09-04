@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    wwtd (1.0.0)
+    wwtd (1.1.0)
 
 GEM
   remote: https://rubygems.org/
@@ -30,3 +30,6 @@ DEPENDENCIES
   rake
   rspec (~> 3)
   wwtd!
+
+BUNDLED WITH
+   1.10.6
