@@ -46,7 +46,7 @@ module WWTD
               env = {}
               env["TEST_ENV_NUMBER"] = (i == 0 ? "" : (i + 1).to_s) if options[:parallel]
               if options[:only_bundle]
-                config['script'] = '# only bundle'
+                config['script'] = 'test "only bundle"'
               end
               Run.new(config, env, lock).execute(&block)
             end

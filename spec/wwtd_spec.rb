@@ -417,7 +417,7 @@ describe WWTD do
       end
 
       it "runs only-bundle" do
-        sh("bundle exec rake wwtd:bundle").should == "START \nbundle install --quiet\n# only bundle\nSUCCESS \nrm -rf .bundle\n"
+        sh("bundle exec rake wwtd:bundle").should == "START \nbundle install --quiet\ntest \"only bundle\"\nSUCCESS \nrm -rf .bundle\n"
       end
 
       context "when running itself" do
