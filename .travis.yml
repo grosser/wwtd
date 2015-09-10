@@ -1,4 +1,6 @@
 bundler_args: ""
+sudo: false
+cache: bundler
 
 before_install:
   - rvm install 2.0.0

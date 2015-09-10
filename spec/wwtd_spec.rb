@@ -1,6 +1,11 @@
 require "spec_helper"
 
 describe WWTD do
+  # some weird CI shit ...
+  def ignore_ci_errors(result)
+    result.sub!(/\nException: java.lang.ThreadDeath thrown from the UncaughtExceptionHandler in thread "Thread-\d+"\n/, "") if ENV["CI"]
+  end
+
   it "has a VERSION" do
     WWTD::VERSION.should =~ /^[\.\da-z]+$/
   end
@@ -171,7 +176,9 @@ describe WWTD do
     it "only bundles when --only-bundle is given" do
       write_default_gemfile
       write_default_rakefile
-      wwtd("--only-bundle").should == "START \nbundle install --quiet\n# only bundle\nSUCCESS \nrm -rf .bundle\n"
+      result = wwtd("--only-bundle")
+      ignore_ci_errors(result)
+      result.should == "START \nbundle install --quiet\ntest \"only bundle\"\nSUCCESS \nrm -rf .bundle\n"
     end
 
     it "casts ruby version to string when creating a path to a lock file" do
@@ -417,7 +424,9 @@ describe WWTD do
       end
 
       it "runs only-bundle" do
-        sh("bundle exec rake wwtd:bundle").should == "START \nbundle install --quiet\ntest \"only bundle\"\nSUCCESS \nrm -rf .bundle\n"
+        result = sh("bundle exec rake wwtd:bundle")
+        ignore_ci_errors(result)
+        result.should == "START \nbundle install --quiet\ntest \"only bundle\"\nSUCCESS \nrm -rf .bundle\n"
       end
 
       context "when running itself" do
