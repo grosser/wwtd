@@ -29,23 +29,22 @@ FAILURE gemfile: gemfiles/rails32.gemfile, rvm: 1.9.3
 ```Bash
 wwtd --local        # Run all gemfiles on current ruby -> get rid of Appraisal
 wwtd --ignore env   # Ignore env settings
+wwtd --bundle       # Bundle all gemfiles
 ```
 
 ### Rake
 
-Unless you've customized .travis.yml, it will run `rake` by default, so make sure your `:default` task runs the test suite, e.g. for Rspec:
-
 ```
 require 'wwtd/tasks'
-# `rake wwtd` # run all gemfiles on all rubies
-task :default => :spec
-task :local => "wwtd:local" # run all gemfiles with local ruby
 ```
+
+ - run all gemfiles and ruby versions `rake wwtd`
+ - run all locally available ruby verions `rake wwtd:bundle`
+ - bundle all gemfiles `rake wwtd:bundle`
 
 ### Tips
  - vendor/bundle is created if you have a committed lock file, add it to `.gitignore` or better yet to your global `.gitignore`.
  - if you do not want `--deployment` but want a lockfile add `bundler_args: ""` to your .travis.yml
- - to only bundle (refresh lock files / try bundling) use `--only-bundle` or `rake wwtd:bundle`
 
 ### Parallel
 
