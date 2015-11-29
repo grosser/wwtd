@@ -32,9 +32,13 @@ wwtd --ignore env   # Ignore env settings
 ```
 
 ### Rake
+
+Unless you've customized .travis.yml, it will run `rake` by default, so make sure your `:default` task runs the test suite, e.g. for Rspec:
+
 ```
 require 'wwtd/tasks'
-task :default => :wwtd      # run all gemfiles on all rubies
+# `rake wwtd` # run all gemfiles on all rubies
+task :default => :spec
 task :local => "wwtd:local" # run all gemfiles with local ruby
 ```
 
