@@ -11,7 +11,7 @@ module WWTD
         yield(:start, config)
         success? ? :success : :failure
       else
-        :missing
+        :missing_ruby_version
       end
 
       yield(state, config)

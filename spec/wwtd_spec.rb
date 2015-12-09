@@ -426,7 +426,7 @@ describe WWTD do
       it "runs only-bundle" do
         result = sh("bundle exec rake wwtd:bundle")
         ignore_ci_errors(result)
-        result.should == "START \nbundle install --quiet\ntest \"only bundle\"\nSUCCESS \nrm -rf .bundle\n"
+        result.should == "Ignoring: rvm\nSTART \nbundle install --quiet\ntest \"only bundle\"\nSUCCESS \nrm -rf .bundle\n"
       end
 
       context "when running itself" do
