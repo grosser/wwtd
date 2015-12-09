@@ -92,7 +92,7 @@ module WWTD
       # {"a" => 1, "b" => 2} + {"a" => 2, "b" => 2} => {"a" => 1} + {"a" => 2}
       def config_info(matrix, config)
         config = config.select { |k,v| matrix.map { |c| c[k] }.uniq.size > 1 }.sort # find non-unique values aka interesting
-        maximum_value_lengths = Hash[config.map { |k,v| [k, matrix.map { |h| h[k].to_s.size }.max ] }] # find maximum value length for each key so we can align
+        maximum_value_lengths = Hash[config.map { |k,_| [k, matrix.map { |h| h[k].to_s.size }.max ] }] # find maximum value length for each key so we can align
         config.map do |k, v|
           value = truncate(v, INFO_MAX_CHARACTERS).ljust([INFO_MAX_CHARACTERS, maximum_value_lengths[k]].min)
           "#{k}: #{value}"
