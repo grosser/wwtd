@@ -9,15 +9,7 @@ end
 
 namespace :spec do
   task :check do
-    all_available = true
-    RubyVersions::ALL.each do |v|
-      unless WWTD::Ruby.available?(v)
-        all_available = false
-        p "ruby #{v} required to run tests correctly"
-      end
-      unless all_available
-        fail "Not all requirements available"
-      end
-    end
+    missing = RubyVersions::ALL.reject { |ruby| WWTD::Ruby.available?(ruby) }
+    fail "ruby #{missing.inspect} required to run tests correctly" if missing.any?
   end
 end
