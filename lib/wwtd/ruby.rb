@@ -13,7 +13,7 @@ module WWTD
         return unless version
         version = normalize_ruby_version(version)
         if rvm_executable
-          command = "rvm #{version} do "
+          command = "rvm-exec #{version} "
           command if cache_command("#{command} ruby -v")
         elsif chruby_executable
           command = "chruby-exec #{version} -- "
