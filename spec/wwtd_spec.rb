@@ -489,8 +489,14 @@ describe WWTD do
     end
 
     it "builds from nested env" do
-      call({"env" => {"global" => ["A=1", "B=2"], "local" => ["A=2", "B=3"]}}).should =~ [
-        {"env" => "A=1 B=2"}, {"env" => "A=2 B=3"}
+      call({"env" => {"global" => ["A=1", "B=2"]}}).should =~ [
+        {"env" => "A=1 B=2"}
+      ]
+    end
+
+    it "builds from nested with matrix env" do
+      call({"env" => {"global" => ["A=1", "B=2"], "matrix" => ["X=2", "Y=3"]}}).should =~ [
+        {"env" => "X=2 A=1 B=2"}, {"env" => "Y=3 A=1 B=2"}
       ]
     end
 

@@ -97,7 +97,16 @@ module WWTD
 
     def matrix(config)
       if config["env"] && config["env"].is_a?(Hash)
-        config["env"] = config["env"].values.map { |v| v.join(" ")}
+        global = if config["env"]["global"]
+          " " + config["env"]["global"].join(" ")
+        else
+          ""
+        end
+        if config["env"]["matrix"]
+          config["env"] = config["env"]["matrix"].map { |v| v + global }
+        else
+          config["env"] = global.strip
+        end
       end
 
       matrix = [{}]
