@@ -11,7 +11,7 @@ describe WWTD do
   end
 
   describe "CLI" do
-    let(:available_ruby_versions) { [RUBY_VERSION, RUBY_VERSION == "2.1.5" ? "2.0.0" : "2.1.5"].sort }
+    let(:available_ruby_versions) { [RUBY_VERSION, RUBY_VERSION == RubyVersions::RUBY_2 ? RubyVersions::RUBY_1 : RubyVersions::RUBY_2].sort }
 
     def bundle(extra="")
       Bundler.with_clean_env { sh "bundle #{extra}" }
@@ -203,7 +203,7 @@ describe WWTD do
 
     it "runs with given jruby version" do
       skip if ENV["CI"]
-      write ".travis.yml", "rvm: jruby-1.7.19"
+      write ".travis.yml", "rvm: #{RubyVersions::JRUBY}"
       write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_ENGINE}-\#{JRUBY_VERSION}} }"
       wwtd("").should include "RUBY: jruby-1.7.19"
     end
@@ -489,8 +489,14 @@ describe WWTD do
     end
 
     it "builds from nested env" do
-      call({"env" => {"global" => ["A=1", "B=2"], "local" => ["A=2", "B=3"]}}).should =~ [
-        {"env" => "A=1 B=2"}, {"env" => "A=2 B=3"}
+      call({"env" => {"global" => ["A=1", "B=2"]}}).should =~ [
+        {"env" => "A=1 B=2"}
+      ]
+    end
+
+    it "builds from nested with matrix env" do
+      call({"env" => {"global" => ["A=1", "B=2"], "matrix" => ["X=2", "Y=3"]}}).should =~ [
+        {"env" => "X=2 A=1 B=2"}, {"env" => "Y=3 A=1 B=2"}
       ]
     end
 
