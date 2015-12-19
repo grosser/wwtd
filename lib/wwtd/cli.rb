@@ -33,7 +33,7 @@ module WWTD
           puts "\nFailed:"
           failed.each do |state, config|
             runner = WWTD::Run.new(config.merge(:rerun => true), {}, nil)
-            env, cmd = runner.env_and_command
+            env, cmd = runner.env_and_command_for_section("script")
             env = WWTD.escaped_env(env, :rerun => true)
             puts colorize(:red, env + cmd)
           end
@@ -60,7 +60,8 @@ module WWTD
 
       def parse_options(argv)
         options = {
-          :ignore => []
+          :ignore => [],
+          :use => [],
         }
         OptionParser.new do |opts|
           opts.banner = <<-BANNER.gsub(/^ {10}/, "")
@@ -73,6 +74,7 @@ module WWTD
           BANNER
           opts.on("-l", "--local", "Ignore rvm options / only run on current ruby") { options[:ignore] << "rvm" }
           opts.on("-i", "--ignore FIELDS", String, "Ignore selected travis fields like rvm/gemfile/matrix/...") { |fields| options[:ignore] += fields.split(",") }
+          opts.on("-u", "--use FIELDS", String, "Use dangerous travis fields like before_install/install/before_script/...") { |fields| options[:use] += fields.split(",") }
           opts.on("-p", "--parallel [COUNT]", Integer, "Run in parallel") { |c| options[:parallel] = c || 4 }
           opts.on("-o", "--only-bundle", "Only bundle, do not run anything") { options[:only_bundle] = true }
           opts.on("-h", "--help", "Show this.") { puts opts; exit }

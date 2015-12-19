@@ -20,9 +20,12 @@ module WWTD
     end
 
     # internal api
-    def env_and_command
-      default_command = (wants_bundle? ? "bundle exec rake" : "rake")
-      command = config["script"] || default_command
+    def env_and_command_for_section(key)
+      unless command = config[key]
+        return [env, "#{'bundle exec ' if wants_bundle?}rake"] if key == "script"
+        return
+      end
+
       command = [command] unless Array === command
       command = command.map { |cmd| "#{switch}#{cmd}" }.join(" && ")
 
@@ -43,7 +46,13 @@ module WWTD
         end
       end
 
-      sh(*env_and_command)
+      ["before_install", "install", "before_script", "script", "after_script"].each do |section|
+        env_and_command = env_and_command_for_section(section)
+        if env_and_command
+          result = sh(*env_and_command)
+          return result if not result
+        end
+      end
     end
 
     def wants_bundle?

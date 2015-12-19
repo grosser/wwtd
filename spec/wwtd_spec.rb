@@ -101,6 +101,30 @@ describe WWTD do
       end
     end
 
+    context "unignores with use" do
+      before { write_default_rakefile }
+
+      it "runs before_script" do
+        write ".travis.yml", "before_script: echo 'before run'\nscript: echo 'script run'"
+        wwtd("--use before_script").should include "before run"
+      end
+
+      it "runs before_install" do
+        write ".travis.yml", "before_install: echo 'before run'\nscript: echo 'script run'"
+        wwtd("--use before_install").should include "before run"
+      end
+
+      it "runs install" do
+        write ".travis.yml", "install: echo 'install run'\nscript: echo 'script run'"
+        wwtd("--use install").should include "install run"
+      end
+
+      it "runs after_script" do
+        write ".travis.yml", "after_script: echo 'after run'\nscript: echo 'script run'"
+        wwtd("--use after_script").should include "after run"
+      end
+    end
+
     it "runs with script" do
       write "Rakefile", "task(:foo){ puts 111 }"
       write ".travis.yml", "script: rake foo"
