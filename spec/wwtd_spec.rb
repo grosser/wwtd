@@ -11,7 +11,7 @@ describe WWTD do
   end
 
   describe "CLI" do
-    let(:available_ruby_versions) { [RUBY_VERSION, RUBY_VERSION == "2.1.5" ? "2.0.0" : "2.1.5"].sort }
+    let(:available_ruby_versions) { [RUBY_VERSION, RUBY_VERSION == RubyVersions::RUBY_2 ? RubyVersions::RUBY_1 : RubyVersions::RUBY_2].sort }
 
     def bundle(extra="")
       Bundler.with_clean_env { sh "bundle #{extra}" }
@@ -203,7 +203,7 @@ describe WWTD do
 
     it "runs with given jruby version" do
       skip if ENV["CI"]
-      write ".travis.yml", "rvm: jruby-1.7.19"
+      write ".travis.yml", "rvm: #{RubyVersions::JRUBY}"
       write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_ENGINE}-\#{JRUBY_VERSION}} }"
       wwtd("").should include "RUBY: jruby-1.7.19"
     end

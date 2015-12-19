@@ -2,6 +2,7 @@ require "bundler/setup"
 require "wwtd"
 require "tmpdir"
 require "benchmark"
+require "ruby_versions"
 
 # having global BUNDLE_PATH=vendor/bundle breaks a few tests, but should still work fine on CO
 SHARED_GEMS_DISABLED = if ENV['CI']
