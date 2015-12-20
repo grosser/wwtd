@@ -58,6 +58,26 @@ wwtd --parallel
 same result, but number-of-processors faster :)
 ```
 
+Contribution
+=======
+
+Run tests with:
+
+```
+bundle
+bundle exec rake
+```
+
+The tests need different ruby versions to be installed,
+if they do not run locally you can use vagrant instead.
+
+```
+vagrant up # it will take a while
+vagrant ssh
+cd /vagrant
+bundle exec rake
+```
+
 Authors
 =======
 

@@ -30,6 +30,3 @@ DEPENDENCIES
   rake
   rspec (~> 3)
   wwtd!
-
-BUNDLED WITH
-   1.11.2
