@@ -133,6 +133,14 @@ describe WWTD do
         write ".travis.yml", "after_script: echo 'after run'\nscript: echo 'script run'"
         wwtd("--use after_script").should include "after run"
       end
+
+      it "runs hooks in proper order" do
+        sections = WWTD::Run::SCRIPT_SECTIONS.map { |s| "#{s}: echo '#{s}'" }.shuffle.join("\n")
+
+        write ".travis.yml", sections
+        expected = WWTD::Run::SCRIPT_SECTIONS.map { |s| "echo '#{s}'\n#{s}" }.join("\n")
+        wwtd("--use #{WWTD::Run::SCRIPT_SECTIONS.join(",")}").should include expected
+      end
     end
 
     it "runs with script" do

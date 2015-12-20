@@ -1,7 +1,7 @@
 module WWTD
   class Run
 
-    SECTIONS = ["before_install", "install", "before_script", "script", "after_script"]
+    SCRIPT_SECTIONS = ["before_install", "install", "before_script", "script", "after_script"]
 
     def initialize(config, env, lock)
       @config, @env, @lock = config, env, lock
@@ -48,7 +48,7 @@ module WWTD
         end
       end
 
-      SECTIONS.each do |section|
+      SCRIPT_SECTIONS.each do |section|
         if env_and_command = env_and_command_for_section(section)
           return unless sh(*env_and_command)
         end
