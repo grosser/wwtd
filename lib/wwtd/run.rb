@@ -1,5 +1,8 @@
 module WWTD
   class Run
+
+    SECTIONS = ["before_install", "install", "before_script", "script", "after_script"]
+
     def initialize(config, env, lock)
       @config, @env, @lock = config, env, lock
       add_env_from_config
@@ -20,9 +23,15 @@ module WWTD
     end
 
     # internal api
-    def env_and_command
-      default_command = (wants_bundle? ? "bundle exec rake" : "rake")
-      command = config["script"] || default_command
+    def env_and_command_for_section(key)
+      unless command = config[key]
+        if key == "script"
+          return [env, wants_bundle? ? "#{switch}bundle exec rake" : "#{switch}rake"]
+        else
+          return false
+        end
+      end
+
       command = [command] unless Array === command
       command = command.map { |cmd| "#{switch}#{cmd}" }.join(" && ")
 
@@ -33,7 +42,6 @@ module WWTD
 
     attr_reader :config, :env, :lock, :switch
 
-
     def success?
       if wants_bundle?
         flock File.join(lock, (config["rvm"] || "rvm").to_s) do
@@ -43,7 +51,12 @@ module WWTD
         end
       end
 
-      sh(*env_and_command)
+      SECTIONS.each do |section|
+        env_and_command = env_and_command_for_section(section)
+        if env_and_command
+          return unless sh(*env_and_command)
+        end
+      end
     end
 
     def wants_bundle?

@@ -18,7 +18,7 @@ module WWTD
     def read_travis_yml(options={})
       config = (File.exist?(CONFIG) ? YAML.load_file(CONFIG) : {})
       config.delete("source_key") # we don't need that we already have the source
-      ignored = (config.keys - UNDERSTOOD) + Array(options[:ignore])
+      ignored = (config.keys - UNDERSTOOD - Array(options[:use])) + Array(options[:ignore])
 
       calculate_local_ruby_matrix = (
         ignored.include?("rvm") &&
