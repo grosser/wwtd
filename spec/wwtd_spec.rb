@@ -109,6 +109,11 @@ describe WWTD do
         wwtd("--use after_script").should_not include "before run"
       end
 
+      it "fails when hook fails" do
+        write ".travis.yml", "before_script: oooopppssss"
+        wwtd("--use before_script", :fail => true)
+      end
+
       it "runs before_script" do
         write ".travis.yml", "before_script: echo 'before run'\nscript: echo 'script run'"
         wwtd("--use before_script").should include "before run"

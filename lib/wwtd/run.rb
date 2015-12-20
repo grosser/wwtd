@@ -53,6 +53,8 @@ module WWTD
           return unless sh(*env_and_command)
         end
       end
+
+      true
     end
 
     def wants_bundle?
