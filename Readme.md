@@ -69,6 +69,8 @@ Authors
  - [Jeff Dean](https://github.com/zilkey)
  - [Ben Osheroff](https://github.com/osheroff)
  - [David Rodríguez](https://github.com/deivid-rodriguez)
+ - [stereobooster](https://github.com/stereobooster)
+
 
 [Michael Grosser](http://grosser.it)<br/>
 michael@grosser.it<br/>
