@@ -104,6 +104,11 @@ describe WWTD do
     context "unignores with use" do
       before { write_default_rakefile }
 
+      it "ignores unknown flags" do
+        write ".travis.yml", "before_script: echo 'before run'\nscript: echo 'script run'"
+        wwtd("--use after_script").should_not include "before run"
+      end
+
       it "runs before_script" do
         write ".travis.yml", "before_script: echo 'before run'\nscript: echo 'script run'"
         wwtd("--use before_script").should include "before run"

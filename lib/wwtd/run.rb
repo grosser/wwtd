@@ -9,7 +9,7 @@ module WWTD
       @switch = build_switch_statement
     end
 
-    def execute(&block)
+    def execute
       state = if Ruby.available?(config["rvm"])
         yield(:start, config)
         success? ? :success : :failure
@@ -24,18 +24,15 @@ module WWTD
 
     # internal api
     def env_and_command_for_section(key)
-      unless command = config[key]
-        if key == "script"
-          return [env, wants_bundle? ? "#{switch}bundle exec rake" : "#{switch}rake"]
-        else
-          return false
-        end
+      if command = config[key]
+        command = [command] unless Array === command
+        command = command.map { |cmd| "#{switch}#{cmd}" }.join(" && ")
+
+        [env, command]
+      elsif key == "script"
+        command = (wants_bundle? ? "#{switch}bundle exec rake" : "#{switch}rake")
+        [env, command]
       end
-
-      command = [command] unless Array === command
-      command = command.map { |cmd| "#{switch}#{cmd}" }.join(" && ")
-
-      [env, command]
     end
 
     private
@@ -52,8 +49,7 @@ module WWTD
       end
 
       SECTIONS.each do |section|
-        env_and_command = env_and_command_for_section(section)
-        if env_and_command
+        if env_and_command = env_and_command_for_section(section)
           return unless sh(*env_and_command)
         end
       end
