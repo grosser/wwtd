@@ -58,18 +58,6 @@ wwtd --parallel
 same result, but number-of-processors faster :)
 ```
 
-Contribution
-=======
-
-Use vagrant to test in Travis-like environment:
-
-```
-vagrant up # it will take a while
-vagrant ssh
-cd /vagrant
-bundle exec rake
-```
-
 Authors
 =======
 
