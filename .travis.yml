@@ -1,8 +1,9 @@
-bundler_args: ""
+langauge: ruby
 sudo: false
 cache: bundler
+
 branches:
-  only: [master]
+  only: master
 
 before_install:
   - rvm install 2.0.0
@@ -15,3 +16,6 @@ rvm:
   - 2.1.5
   - 2.2.1
   - jruby-1.7.19
+
+matrix:
+  fast_finish: true
