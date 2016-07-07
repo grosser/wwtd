@@ -1,6 +1,15 @@
+require 'yaml'
+
 module RubyVersions
-  RUBY_1 = "2.0.0"
-  RUBY_2 = "2.1.5" # installed by default on travis
-  JRUBY = "jruby-1.7.19"
-  ALL = [RUBY_1, RUBY_2, JRUBY]
+  ALL = YAML.load_file('.travis.yml').fetch('before_install').map { |l| l.sub('rvm install ', '') }
+
+  raise "Rubies are wrong" unless
+    ALL.size == 3 &&
+    ALL[0] =~ /^\d+\.\d+\.\d+$/ &&
+    ALL[1] =~ /^\d+\.\d+\.\d+$/ &&
+    ALL[2] =~ /^jruby-\d+\.\d+\.\d+$/
+
+  RUBY_1 = ALL[0]
+  RUBY_2 = ALL[1]
+  JRUBY = ALL[2]
 end
