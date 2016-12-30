@@ -1,7 +1,7 @@
 WWTD: Travis simulator - faster + no more waiting for build emails.<br/>
 Reads your .travis.yml and runs what travis would run (via rvm/rbenv/chruby).
 
-![Results](http://dl.dropbox.com/u/2670385/Web/wwtd-results.png)
+![Results](assets/results.png?raw=true)
 
 Install
 =======
