@@ -26,15 +26,17 @@ FAILURE gemfile: gemfiles/rails32.gemfile, rvm: 1.9.3
 ```
 
 ### Options
+
 ```Bash
 wwtd --local        # Run all gemfiles on current ruby -> get rid of Appraisal
 wwtd --ignore env   # Ignore env settings
-wwtd --bundle       # Bundle all gemfiles
+wwtd --only-bundle  # Bundle all gemfiles
+wwtd --help         # Display help, and learn about other options
 ```
 
 ### Rake
 
-```
+```ruby
 require 'wwtd/tasks'
 ```
 
@@ -63,7 +65,7 @@ Contribution
 
 Run tests with:
 
-```
+```Bash
 bundle
 bundle exec rake
 ```
@@ -71,7 +73,7 @@ bundle exec rake
 The tests need different ruby versions to be installed,
 if they do not run locally you can use vagrant instead.
 
-```
+```Bash
 vagrant up # it will take a while
 vagrant ssh
 cd /vagrant
