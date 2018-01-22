@@ -7,16 +7,17 @@ branches:
 
 # make other rubies available for switching
 before_install:
+  - "ruby -e 'print(defined?(JRUBY_VERSION) ? %{jruby-#{JRUBY_VERSION}} : RUBY_VERSION)' > version"
   - rvm install 2.0.0
   - rvm install 2.1.5
   - rvm install jruby-1.7.25
+  - rvm use $(cat version) # install switches versions, so restore
 
 rvm:
-  - 2.0.0
-  - 2.1.9
-  - 2.2.4
-  - 2.3.1
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
   - jruby-1.7.25
-
-matrix:
-  fast_finish: true
+  - jruby
