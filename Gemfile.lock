@@ -6,27 +6,32 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    bump (0.5.0)
-    diff-lcs (1.2.5)
-    rake (10.3.2)
-    rspec (3.0.0)
-      rspec-core (~> 3.0.0)
-      rspec-expectations (~> 3.0.0)
-      rspec-mocks (~> 3.0.0)
-    rspec-core (3.0.2)
-      rspec-support (~> 3.0.0)
-    rspec-expectations (3.0.2)
+    bump (0.5.4)
+    diff-lcs (1.3)
+    rake (12.2.1)
+    rspec (3.7.0)
+      rspec-core (~> 3.7.0)
+      rspec-expectations (~> 3.7.0)
+      rspec-mocks (~> 3.7.0)
+    rspec-core (3.7.1)
+      rspec-support (~> 3.7.0)
+    rspec-expectations (3.7.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.0.0)
-    rspec-mocks (3.0.2)
-      rspec-support (~> 3.0.0)
-    rspec-support (3.0.2)
+      rspec-support (~> 3.7.0)
+    rspec-mocks (3.7.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.7.0)
+    rspec-support (3.7.0)
 
 PLATFORMS
+  java
   ruby
 
 DEPENDENCIES
   bump
-  rake
+  rake (~> 12.2.1)
   rspec (~> 3)
   wwtd!
+
+BUNDLED WITH
+   1.16.1

@@ -1,9 +1,9 @@
 require 'yaml'
 
 module RubyVersions
-  ALL = YAML.load_file('.travis.yml').fetch('before_install').map { |l| l.sub('rvm install ', '') }
+  ALL = YAML.load_file('.travis.yml').fetch('before_install').map { |l| l.sub!('rvm install ', '') }.compact
 
-  raise "Rubies are wrong" unless
+  raise "before_install rubies are wrong (#{ALL.join(", ")})" unless
     ALL.size == 3 &&
     ALL[0] =~ /^\d+\.\d+\.\d+$/ &&
     ALL[1] =~ /^\d+\.\d+\.\d+$/ &&

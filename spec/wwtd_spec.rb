@@ -2,8 +2,8 @@ require "spec_helper"
 
 describe WWTD do
   # some weird CI shit ...
-  def ignore_ci_errors(result)
-    result.sub!(/\nException: java.lang.ThreadDeath thrown from the UncaughtExceptionHandler in thread "Thread-\d+"\n/, "") if ENV["CI"]
+  def ignore_ci_errors!(result)
+    result.gsub!(/\nException: java.lang.ThreadDeath thrown from the UncaughtExceptionHandler in thread "Thread-\d+"\n/, "") if ENV["CI"]
   end
 
   it "has a VERSION" do
@@ -11,7 +11,9 @@ describe WWTD do
   end
 
   describe "CLI" do
-    let(:available_ruby_versions) { [RUBY_VERSION, RUBY_VERSION == RubyVersions::RUBY_2 ? RubyVersions::RUBY_1 : RubyVersions::RUBY_2].sort }
+    let(:available_ruby_versions) do
+      [RubyVersions::RUBY_1, RubyVersions::RUBY_2].sort
+    end
 
     def bundle(extra="")
       Bundler.with_clean_env { sh "bundle #{extra}" }
@@ -219,7 +221,7 @@ describe WWTD do
       write_default_gemfile
       write_default_rakefile
       result = wwtd("--only-bundle")
-      ignore_ci_errors(result)
+      ignore_ci_errors!(result)
       result.should == "START \nbundle install --quiet\ntest \"only bundle\"\nSUCCESS \nrm -rf .bundle\n"
     end
 
@@ -247,7 +249,7 @@ describe WWTD do
       skip if ENV["CI"]
       write ".travis.yml", "rvm: #{RubyVersions::JRUBY}"
       write "Rakefile", "task(:default) { puts %Q{RUBY: \#{RUBY_ENGINE}-\#{JRUBY_VERSION}} }"
-      wwtd("").should include "RUBY: jruby-1.7.19"
+      wwtd("").should include "RUBY: #{RubyVersions::JRUBY}"
     end
 
     it "runs with given gemfile" do
@@ -467,7 +469,7 @@ describe WWTD do
 
       it "runs only-bundle" do
         result = sh("bundle exec rake wwtd:bundle")
-        ignore_ci_errors(result)
+        ignore_ci_errors!(result)
         result.should == "Ignoring: rvm\nSTART \nbundle install --quiet\ntest \"only bundle\"\nSUCCESS \nrm -rf .bundle\n"
       end
 
@@ -501,6 +503,11 @@ describe WWTD do
     def sh(command, options={})
       result = Bundler.with_clean_env { `#{command} #{"2>&1" unless options[:keep_output]}` }
       raise "#{options[:fail] ? "SUCCESS" : "FAIL"} #{command}\n#{result}" if $?.success? == !!options[:fail]
+      result.gsub!("Picked up _JAVA_OPTIONS: -Xmx2048m -Xms512m\n", "")
+      result.gsub!("YAML safe loading is not available. Please upgrade psych to a version that supports safe loading (>= 2.0).\n", "")
+      result.gsub!(/^WARNING:.*\n/, "")
+      result.gsub!(/^The signal.*\n/, "")
+      result.gsub!(/^io\/console on JRuby.*\n/, "")
       result
     end
   end
