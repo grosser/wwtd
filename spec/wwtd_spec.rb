@@ -196,7 +196,7 @@ describe WWTD do
       result = wwtd("")
       result.should include "bundle install --quiet"
       result.should include "\nRAKE: 0.9.2.2\n"
-      File.exist?("vendor/bundle").should == SHARED_GEMS_DISABLED
+      File.exist?("vendor/bundle").should == BUNDLE_PATH_USED
     end
 
     it "bundles with --deployment if lockfile is committed" do
@@ -308,7 +308,7 @@ describe WWTD do
         write_default_gemfile
         bundle
         wwtd("")
-        File.exist?(".bundle").should == SHARED_GEMS_DISABLED
+        File.exist?(".bundle").should == false
       end
 
       it "leaves .bundle alone" do
@@ -321,8 +321,7 @@ describe WWTD do
 
         wwtd("")
 
-        File.exist?(".bundle").should == true
-        sh("ls .bundle").should == (SHARED_GEMS_DISABLED ? "config\nfoo\n" : "foo\n")
+        sh("ls .bundle").should == "foo\n"
       end
 
       it "ignores .bundle settings" do
@@ -457,6 +456,9 @@ describe WWTD do
           require 'wwtd/tasks'
           task(:default) { puts 'YES-IT-WORKS' }
         RUBY
+        FileUtils.mkdir_p("vendor/cache")
+        FileUtils.cp("#{Bundler.root}/spec/rake-12.3.0.gem", "vendor/cache")
+        sh "bundle install --local"
       end
 
       it "runs normally" do
