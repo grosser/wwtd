@@ -10,7 +10,7 @@ before_install:
   - "ruby -e 'print(defined?(JRUBY_VERSION) ? %{jruby-#{JRUBY_VERSION}} : RUBY_VERSION)' > version"
   - rvm install 2.0.0
   - rvm install 2.1.5
-  - rvm install jruby-1.7.25
+  - rvm install jruby-9.1.16.0
   - rvm use $(cat version) # install switches versions, so restore
 
 rvm:
@@ -19,5 +19,4 @@ rvm:
   - 2.2
   - 2.3
   - 2.4
-  - jruby-1.7.25
   - jruby

@@ -7,7 +7,7 @@ module RubyVersions
     ALL.size == 3 &&
     ALL[0] =~ /^\d+\.\d+\.\d+$/ &&
     ALL[1] =~ /^\d+\.\d+\.\d+$/ &&
-    ALL[2] =~ /^jruby-\d+\.\d+\.\d+$/
+    ALL[2] =~ /^jruby-\d+\.\d+\.\d+(\.\d+)?$/
 
   RUBY_1 = ALL[0]
   RUBY_2 = ALL[1]
