@@ -20,3 +20,8 @@ rvm:
   - 2.3
   - 2.4
   - jruby
+
+matrix:
+  allow_failures:
+    - rvm: jruby
+  fast_finish: true
