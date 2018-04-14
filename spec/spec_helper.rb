@@ -4,11 +4,10 @@ require "tmpdir"
 require "benchmark"
 require "ruby_versions"
 
-# having global BUNDLE_PATH=vendor/bundle breaks a few tests, but should still work fine on CO
-SHARED_GEMS_DISABLED = if ENV['CI']
-  false
-else
-  File.exist?(".bundle/config") && File.read(".bundle/config").include?("BUNDLE_DISABLE_SHARED_GEMS: '1'")
+# having global BUNDLE_PATH=vendor/bundle breaks a few tests
+# somehow it's not set in travis but it still always generates vendor/bundle
+BUNDLE_PATH_USED = !ENV["CI"] && [".bundle/config", File.expand_path("~/.bundle/config")].any? do |file|
+  File.exist?(file) && File.read(file).include?("BUNDLE_PATH")
 end
 
 RSpec.configure do |config|
