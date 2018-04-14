@@ -48,13 +48,10 @@ module WWTD
         end
       end
 
-      SCRIPT_SECTIONS.each do |section|
-        if env_and_command = env_and_command_for_section(section)
-          return unless sh(*env_and_command)
-        end
+      SCRIPT_SECTIONS.all? do |section|
+        env_and_command = env_and_command_for_section(section)
+        !env_and_command || sh(*env_and_command)
       end
-
-      true
     end
 
     def wants_bundle?
