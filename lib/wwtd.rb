@@ -117,7 +117,9 @@ module WWTD
 
       if matrix_config = config.delete("matrix")
         if exclude = matrix_config["exclude"]
-          matrix -= exclude
+          exclude.each do |exclude_cell|
+            matrix.delete_if { |cell| matrix_match?(cell, exclude_cell) }
+          end
         end
         if include = matrix_config["include"]
           if matrix == [{}]
@@ -128,6 +130,10 @@ module WWTD
         end
       end
       matrix.map! { |c| config.merge(c) }
+    end
+
+    def matrix_match?(cell, exclude)
+      cell.slice(*exclude.keys) == exclude
     end
 
     def with_clean_env(&block)

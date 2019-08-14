@@ -593,6 +593,23 @@ describe WWTD do
         {"rvm"=>"c", "gemfile"=>"Gemfile1"},
       ]
     end
+
+    it "excludes partial matches" do
+      call(
+        "gemfile" => ["Gemfile1", "Gemfile2"],
+        "rvm" => ["a", "b"],
+        "env" => ["KEY=val"],
+        "matrix" => {
+          "exclude" => [
+            {"gemfile" => "Gemfile1", "rvm" => "b"}
+          ],
+        }
+      ).should == [
+        {"rvm" => "a", "gemfile"=>"Gemfile1", "env" => "KEY=val"},
+        {"rvm" => "a", "gemfile"=>"Gemfile2", "env" => "KEY=val"},
+        {"rvm" => "b", "gemfile"=>"Gemfile2", "env" => "KEY=val"},
+      ]
+    end
   end
 
   describe ".config_info" do
