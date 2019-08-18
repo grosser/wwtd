@@ -133,7 +133,7 @@ module WWTD
     end
 
     def matrix_match?(cell, exclude)
-      cell.slice(*exclude.keys) == exclude
+      cell.values_at(*exclude.keys) == exclude.values
     end
 
     def with_clean_env(&block)
