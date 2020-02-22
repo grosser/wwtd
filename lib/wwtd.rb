@@ -138,7 +138,8 @@ module WWTD
 
     def with_clean_env(&block)
       if defined?(Bundler)
-        Bundler.with_clean_env(&block)
+        method = (Bundler.respond_to?(:with_unbundled_env) ? :with_unbundled_env : :with_clean_env)
+        Bundler.send(method, &block)
       else
         yield
       end

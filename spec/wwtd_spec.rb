@@ -16,7 +16,7 @@ describe WWTD do
     end
 
     def bundle(extra="")
-      Bundler.with_clean_env { sh "bundle #{extra}" }
+      WWTD.send(:with_clean_env) { sh "bundle #{extra}" }
     end
 
     def write_default_gemfile(rake_version="0.9.2.2")
