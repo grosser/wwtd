@@ -24,8 +24,11 @@ gem install wwtd
 wwtd                # Run all gemfiles with all Ruby versions
 wwtd --local        # Run all gemfiles with current Ruby version => get rid of Appraisal gem!
 wwtd --ignore env   # Ignore env settings
+wwtd --use install  # Use dangerous travis fields like before_install/install/before_script/...
+wwtd --parallel 2   # Run in parallel
 wwtd --only-bundle  # Bundle all gemfiles
 wwtd --help         # Display help, and learn about other options
+wwtd --version      # Display version
 ```
 
 ### Rake
